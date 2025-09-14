@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Supplier;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class SupplierController extends Controller
+{
+    public function index()
+    {
+        $suppliers = Supplier::paginate(10);
+        return Inertia::render('Suppliers/Index', [
+            'suppliers' => $suppliers,
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Suppliers/Create');
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'contact' => 'nullable|string|max:100',
+                'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string',
+            ]);
+
+            Supplier::create($data);
+
+            return redirect()->route('suppliers.index')->with([
+                'flash' => ['success' => 'Supplier berhasil ditambahkan'],
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'flash' => ['error' => $e->getMessage()],
+            ]);
+        }
+    }
+
+    public function edit(Supplier $supplier)
+    {
+        return Inertia::render('Suppliers/Edit', [
+            'supplier' => $supplier,
+        ]);
+    }
+
+    public function update(Request $request, Supplier $supplier)
+    {
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'contact' => 'nullable|string|max:100',
+                'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string',
+            ]);
+
+            $supplier->update($data);
+
+            return redirect()->route('suppliers.index')->with([
+                'flash' => ['success' => 'Supplier berhasil diperbarui'],
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'flash' => ['error' => $e->getMessage()],
+            ]);
+        }
+    }
+
+    public function destroy(Supplier $supplier)
+    {
+        try {
+            $supplier->delete();
+            return redirect()->route('suppliers.index')->with([
+                'flash' => ['success' => 'Supplier berhasil dihapus'],
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'flash' => ['error' => $e->getMessage()],
+            ]);
+        }
+    }
+}
