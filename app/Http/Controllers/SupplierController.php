@@ -43,10 +43,12 @@ class SupplierController extends Controller
         }
     }
 
-    public function edit(Supplier $supplier)
+    public function edit(Request $request, Supplier $supplier)
     {
+        $back = $request->query('back');
         return Inertia::render('Suppliers/Edit', [
             'supplier' => $supplier,
+            'back' => $back
         ]);
     }
 
@@ -61,6 +63,13 @@ class SupplierController extends Controller
             ]);
 
             $supplier->update($data);
+
+            $back = $request->query('back');
+            if ($back) {
+                return redirect($back)->with([
+                    'flash' => ['success' => 'Supplier berhasil diperbarui'],
+                ]);
+            }
 
             return redirect()->route('suppliers.index')->with([
                 'flash' => ['success' => 'Supplier berhasil diperbarui'],

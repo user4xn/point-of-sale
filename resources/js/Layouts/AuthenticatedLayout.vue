@@ -5,7 +5,7 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
 
 const showingNavigationDropdown = ref(false);
@@ -24,6 +24,53 @@ watch(
   },
   { deep: true, immediate: true }
 )
+
+const checkRegister = async () => {
+  const res = await fetch(route('cash-register.check'))
+  return await res.json()
+}
+
+const openCash = async () => {
+  const { open } = await checkRegister()
+  if (open) {
+    return Swal.fire('Peringatan', 'Kas sudah dibuka, tutup dulu sebelum buka baru.', 'warning')
+  }
+
+  const { value: opening } = await Swal.fire({
+    title: 'Buka Kas',
+    input: 'number',
+    inputLabel: 'Saldo awal',
+    inputPlaceholder: 'Masukkan saldo kas awal',
+    confirmButtonText: 'Buka',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+  })
+
+  if (opening !== undefined) {
+    router.post(route('cash-register.open'), { opening_amount: opening })
+  }
+}
+
+const closeCash = async () => {
+  const { open } = await checkRegister()
+  if (!open) {
+    return Swal.fire('Peringatan', 'Tidak ada kas terbuka untuk ditutup.', 'warning')
+  }
+  
+  const { value: closing } = await Swal.fire({
+    title: 'Tutup Kas',
+    input: 'number',
+    inputLabel: 'Saldo akhir',
+    inputPlaceholder: 'Masukkan saldo kas akhir',
+    confirmButtonText: 'Tutup',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+  })
+
+  if (closing !== undefined) {
+    router.post(route('cash-register.close'), { closing_amount: closing })
+  }
+}
 </script>
 
 <template>
@@ -55,6 +102,22 @@ watch(
                                 >
                                     Aplikasi
                                 </NavLink>
+
+                                 <!-- Tombol Buka Kas -->
+                                <button
+                                  @click="openCash"
+                                  class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out"
+                                >
+                                  Buka Kas
+                                </button>
+
+                                <!-- Tombol Tutup Kas -->
+                                <button
+                                  @click="closeCash"
+                                  class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out"
+                                >
+                                  Tutup Kas
+                                </button>
                             </div>
                         </div>
 
@@ -162,6 +225,22 @@ watch(
                         >
                             Aplikasi
                         </ResponsiveNavLink>
+
+                        <!-- Tombol Buka Kas -->
+                        <button
+                          @click="openCash"
+                          class="w-full text-left px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-500 text-white"
+                        >
+                          Buka Kas
+                        </button>
+
+                        <!-- Tombol Tutup Kas -->
+                        <button
+                          @click="closeCash"
+                          class="w-full text-left px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-500 text-white"
+                        >
+                          Tutup Kas
+                        </button>>
                     </div>
 
                     <!-- Responsive Settings Options -->

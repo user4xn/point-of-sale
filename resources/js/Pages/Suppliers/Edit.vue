@@ -6,7 +6,16 @@ defineOptions({
   layout: AuthenticatedLayout,
 })
 
-const props = defineProps<{ supplier: { id: number; name: string; contact?: string; email?: string; address?: string } }>()
+const props = defineProps<{ 
+  supplier: { 
+    id: number; 
+    name: string; 
+    contact?: string; 
+    email?: string; 
+    address?: string 
+  } 
+  back?: string | null
+}>()
 
 const form = useForm({
   name: props.supplier.name,
@@ -16,7 +25,7 @@ const form = useForm({
 })
 
 const submit = () => {
-  form.put(`/suppliers/${props.supplier.id}`)
+  form.put(route('suppliers.update', { supplier: props.supplier.id, back: props.back }))
 }
 </script>
 
@@ -27,7 +36,7 @@ const submit = () => {
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-xl font-bold">Edit Supplier</h1>
       <Link
-        href="/suppliers"
+        :href="back ?? '/suppliers'"
         class="px-3 py-2 bg-gray-600 hover:bg-gray-500 font-semibold transition ease-in-out text-white rounded"
       >
         ← Kembali

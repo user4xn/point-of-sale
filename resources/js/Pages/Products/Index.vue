@@ -3,10 +3,44 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
 import Swal from 'sweetalert2'
+import { ref, watch } from 'vue'
+import Checkbox from '@/Components/Checkbox.vue'
 
 defineOptions({ layout: AuthenticatedLayout })
 
-const props = defineProps<{ products: any }>()
+const props = defineProps<{ 
+  products: any, 
+  categories: any[], 
+  units: any[], 
+  suppliers: any[],
+  filters: { 
+    search?: string,
+    kategori?: string,
+    supplier?: string
+    status?: string
+    empty_stock?: boolean
+  } 
+}>()
+
+const search = ref(props.filters.search || '')
+const kategori = ref(props.filters.kategori || '')
+const supplier = ref(props.filters.supplier || '')
+const status = ref(props.filters.status || '')
+const emptyStock = ref(props.filters.empty_stock || false)
+
+watch([search, kategori, supplier, status, emptyStock], (value) => {
+  router.get(
+    '/products',
+    { 
+      search: search.value, 
+      kategori: kategori.value, 
+      supplier: supplier.value,
+      status: status.value,
+      empty_stock: emptyStock.value ? 1 : 0
+    },
+    { preserveState: true, replace: true }
+  )
+})
 
 const deleteProduct = async (id: number) => {
   const result = await Swal.fire({
@@ -23,6 +57,16 @@ const deleteProduct = async (id: number) => {
     router.delete(`/products/${id}`)
   }
 }
+
+const resetFilters = () => {
+  search.value = ''
+  kategori.value = ''
+  supplier.value = ''
+  status.value = ''
+  emptyStock.value = false
+
+  router.get('/products', {}, { replace: true })
+}
 </script>
 
 <template>
@@ -37,6 +81,44 @@ const deleteProduct = async (id: number) => {
       >
         + Tambah Produk
       </Link>
+    </div>
+
+    <div class="filters mb-4 flex gap-2 flex-wrap w-full justify-start flex-stretch">
+      <input
+        v-model="search"
+        type="text"
+        placeholder="Cari produk..."
+        class="px-4 py-2 rounded-full bg-gray-700 border border-gray-600 text-white"
+      />
+
+      <select v-model="kategori" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+        <option value=""> Semua Kategori </option>
+        <option v-for="category in categories" :value="category.id">{{ category.name }}</option>
+      </select>
+
+      <select v-model="supplier" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+        <option value=""> Semua Supplier </option>
+        <option v-for="supplier in suppliers" :value="supplier.id">{{ supplier.name }}</option>
+      </select>
+
+      <select v-model="status" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+        <option value=""> Semua Status </option>
+        <option value="active">Aktif</option>
+        <option value="inactive">Nonaktif</option>
+      </select>
+
+      <label class="flex items-center gap-2 text-sm">
+        <Checkbox v-model="emptyStock" :checked="false"/>
+        Stok Kosong
+      </label>
+
+      <button 
+        type="button"
+        @click="resetFilters"
+        class="px-3 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition"
+      >
+        Hapus Filter
+      </button>
     </div>
 
     <table class="w-full text-sm border border-gray-600 rounded">
@@ -87,19 +169,21 @@ const deleteProduct = async (id: number) => {
               {{ product.status === 'active' ? 'Aktif' : 'Nonaktif' }}
             </span>
           </td>
-          <td class="p-2 flex gap-2 justify-end">
-            <Link
-              :href="`/products/${product.id}/edit`"
-              class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
-            >
-              Edit
-            </Link>
-            <button
-              @click="deleteProduct(product.id)"
-              class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
-            >
-              Delete
-            </button>
+          <td class="p-2">
+            <div class="flex gap-2 justify-end">
+              <Link
+                :href="`/products/${product.id}/edit`"
+                class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
+              >
+                Edit
+              </Link>
+              <button
+                @click="deleteProduct(product.id)"
+                class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
+              >
+                Delete
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>

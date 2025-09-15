@@ -12,14 +12,42 @@ use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::with(['category', 'unit', 'supplier'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+
+        if ($request->has('search') && $request->search !== '') {
+            $products->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        if ($kategori = $request->get('kategori')) {
+            $products->where('category_id', $kategori);
+        }
+
+        if ($supplier = $request->get('supplier')) {
+            $products->where('supplier_id', $supplier);
+        }
+
+        if ($status = $request->get('status')) {
+            $products->where('status', $status);
+        }
+
+        if ($request->boolean('empty_stock')) {
+            $products->where('stock', '<=', 0);
+        }
+
+        $products = $products->paginate(10)->withQueryString();
 
         return Inertia::render('Products/Index', [
             'products' => $products,
+            'categories' => Category::all(),
+            'units' => Unit::all(),
+            'suppliers' => Supplier::all(),
+            'filters' => $request->only(['search','kategori','supplier','status','empty_stock']),
         ]);
     }
 
@@ -62,6 +90,10 @@ class ProductController extends Controller
                 $data['unit_id'] = $unit->id;
             }
 
+            if ($request->new_supplier) {
+                $supplier = Supplier::create(['name' => $request->new_supplier]);
+                $data['supplier_id'] = $supplier->id;
+            }
 
             Product::create($data);
 
@@ -111,6 +143,21 @@ class ProductController extends Controller
                 $data['image'] = $request->file('image')->store('products', 'public');
             } else {
                 unset($data['image']);
+            }
+
+            if ($request->new_category) {
+                $category = Category::create(['name' => $request->new_category]);
+                $data['category_id'] = $category->id;
+            }
+
+            if ($request->new_unit) {
+                $unit = Unit::create(['name' => $request->new_unit]);
+                $data['unit_id'] = $unit->id;
+            }
+
+            if ($request->new_supplier) {
+                $supplier = Supplier::create(['name' => $request->new_supplier]);
+                $data['supplier_id'] = $supplier->id;
             }
 
             $product->update($data);

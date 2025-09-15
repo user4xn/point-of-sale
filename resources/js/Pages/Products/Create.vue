@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import VueSelect from 'vue3-select-component'
 
 defineOptions({ layout: AuthenticatedLayout })
 
 const props = defineProps<{ categories: any[], units: any[], suppliers: any[] }>()
 const fileInput = ref<HTMLInputElement | null>(null)
+
+const selectedSupplier = computed(() => {
+  return props.suppliers.find(s => s.id === form.supplier_id) || null
+})
 
 const form = useForm({
   name: '',
@@ -22,6 +27,7 @@ const form = useForm({
   image: null as File | null,
   new_category: '',
   new_unit: '',
+  new_supplier: '',
 })
 
 const imagePreview = ref<string | null>(null)
@@ -38,6 +44,25 @@ const handleImageChange = (e: Event) => {
   } else {
     imagePreview.value = null
   }
+}
+
+const addCategory = (newTag: string) => {
+  form.category_id = null
+  form.new_category = newTag
+  props.categories.push({ id: null, name: newTag })
+  console.log(form)
+}
+
+const addUnit = (newTag: string) => {
+  form.category_id = null
+  form.new_unit = newTag
+  props.units.push({ id: null, name: newTag })
+}
+
+const addSupplier = (newTag: string) => {
+  form.supplier_id = null
+  form.new_supplier = newTag
+  props.suppliers.push({ id: null, name: newTag })
 }
 
 const submit = () => {
@@ -69,50 +94,50 @@ const triggerFilePicker = () => {
         <!-- Nama Produk -->
         <div>
           <label class="block text-sm font-semibold mb-1">Nama Produk</label>
-          <input v-model="form.name" type="text" class="w-full border bg-gray-700 rounded p-2" />
+          <input v-model="form.name" type="text" class="w-full border bg-gray-700 rounded p-2" placeholder="Indomie Goreng" />
         </div>
 
         <!-- SKU -->
         <div>
           <label class="block text-sm font-semibold mb-1">SKU</label>
-          <input v-model="form.sku" type="text" class="w-full border bg-gray-700 rounded p-2" />
+          <input v-model="form.sku" type="text" class="w-full border bg-gray-700 rounded p-2" placeholder="1102412512" />
         </div>
 
         <!-- Category -->
         <div>
           <label class="block text-sm font-semibold mb-1">Kategori</label>
-          <Multiselect
+          <div class="w-full bg-gray-700 text-white border border-gray-600 rounded"></div>
+          <VueSelect
             v-model="form.category_id"
             :options="props.categories.map(c => ({ value: c.id, label: c.name }))"
-            placeholder="Pilih / ketik kategori baru"
-            track-by="value"
-            label="label"
-            :taggable="true"
-            @tag="form.category_id = null; form.new_category = $event"
+            placeholder="Pilih / Ketik Kategori Baru"
+            :is-taggable="true"
+            @option-created="addCategory"
           />
         </div>
 
         <!-- Unit -->
         <div>
-          <label class="block text-sm font-semibold mb-1">Unit</label>
-          <Multiselect
+          <label class="block text-sm font-semibold mb-1">Unit (Satuan)</label>
+          <VueSelect
             v-model="form.unit_id"
             :options="props.units.map(u => ({ value: u.id, label: u.name }))"
-            placeholder="Pilih / ketik unit baru"
-            track-by="value"
-            label="label"
-            :taggable="true"
-            @tag="form.unit_id = null; form.new_unit = $event"
+            placeholder="Pilih / Ketik Unit Baru"
+            :is-taggable="true"
+            @option-created="addUnit"
           />
         </div>
 
         <!-- Supplier -->
         <div>
           <label class="block text-sm font-semibold mb-1">Supplier</label>
-          <select v-model="form.supplier_id" class="w-full border bg-gray-700 rounded p-2">
-            <option :value="null">-- Pilih Supplier --</option>
-            <option v-for="s in props.suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
+          <VueSelect
+            v-model="form.supplier_id"
+            :options="props.suppliers.map(s => ({ value: s.id, label: s.name }))"
+            placeholder="Pilih / Ketik Supplier Baru"
+            :is-taggable="true"
+            @option-created="addSupplier"
+          />
         </div>
 
         <!-- Harga -->
@@ -145,7 +170,7 @@ const triggerFilePicker = () => {
         <!-- Deskripsi -->
         <div>
           <label class="block text-sm font-semibold mb-1">Deskripsi</label>
-          <textarea v-model="form.description" class="w-full border bg-gray-700 rounded p-2"></textarea>
+          <textarea v-model="form.description" class="w-full border bg-gray-700 rounded p-2" placeholder="Indomie Goreng Bundling Telur"></textarea>
         </div>
       </div>
 
@@ -170,6 +195,26 @@ const triggerFilePicker = () => {
           accept="image/*"
           @change="handleImageChange"
         />
+
+        <!-- Detail Supplier -->
+        <div v-if="selectedSupplier" class="mt-2 p-3 rounded bg-gray-800 border border-gray-600 text-sm w-full h-auto">
+          <div class="flex gap-2 justify-between flex-wrap">
+            <span class="text-2xl font-bold">Detail Supplier</span>
+            <Link
+              v-if="selectedSupplier.created_at != null"
+              :href="`/suppliers/${selectedSupplier.id}/edit?back=/products/create`"
+              class="px-2 py-1 bg-yellow-500 font-semibold hover:bg-yellow-400 transition ease-in-out text-white rounded"
+            >
+              Edit Data Supplier
+            </Link>
+            <span v-else class="px-2 py-1 bg-blue-500 font-semibold transition ease-in-out text-white rounded">BARU</span>
+          </div>
+          <p class="p-2 mt-4"><span class="font-semibold">Nama:</span> {{ selectedSupplier.name }}</p>
+          <p class="p-2"><span class="font-semibold">Email:</span> {{ selectedSupplier.email ?? '-' }}</p>
+          <p class="p-2"><span class="font-semibold">Telepon:</span> {{ selectedSupplier.phone ?? '-'}}</p>
+          <p class="p-2"><span class="font-semibold">Alamat:</span> {{ selectedSupplier.address ?? '-' }}</p>
+          <p class="p-2" v-if="selectedSupplier.created_at"><span class="font-semibold">Terdaftar:</span> {{ (selectedSupplier.created_at) }}</p>
+        </div>
       </div>
     </form>
 

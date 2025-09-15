@@ -62,19 +62,21 @@ const deleteSupplier = async (id: number) => {
           <td class="p-2">{{ supplier.contact }}</td>
           <td class="p-2">{{ supplier.email }}</td>
           <td class="p-2">{{ supplier.address }}</td>
-          <td class="p-2 flex gap-2 justify-end">
-            <Link
-              :href="`/suppliers/${supplier.id}/edit`"
-              class="px-2 py-1 bg-yellow-500 font-semibold hover:bg-yellow-400 transition ease-in-out text-white rounded"
-            >
-              Edit
-            </Link>
-            <button
-              @click="deleteSupplier(supplier.id)"
-              class="px-2 py-1 bg-red-600 font-semibold hover:bg-red-500 transition ease-in-out text-white rounded"
-            >
-              Hapus
-            </button>
+          <td class="p-2">
+            <div class="flex gap-2 justify-end">
+              <Link
+                :href="`/suppliers/${supplier.id}/edit`"
+                class="px-2 py-1 bg-yellow-500 font-semibold hover:bg-yellow-400 transition ease-in-out text-white rounded"
+              >
+                Edit
+              </Link>
+              <button
+                @click="deleteSupplier(supplier.id)"
+                class="px-2 py-1 bg-red-600 font-semibold hover:bg-red-500 transition ease-in-out text-white rounded"
+              >
+                Hapus
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>

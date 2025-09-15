@@ -1,10 +1,41 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { Head, Link, usePage } from '@inertiajs/vue3'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import Swal from 'sweetalert2';
 import { ref } from 'vue'
 
 const page = usePage();
 const role = page.props.auth.user?.role || 'cashier';
+
+const props = defineProps<{
+  dashboard: any
+}>()
+
+const dashboard = ref(props.dashboard)
+
+const checkRegister = async () => {
+  const res = await fetch(route('cash-register.check'))
+  return await res.json()
+}
+
+const handleAppClick = async (app: any) => {
+  if (app.name === 'Transaksi') {
+    const { open } = await checkRegister()
+    if (!open) {
+      await Swal.fire({
+        title: 'Kas belum dibuka',
+        text: 'Silakan buka kas terlebih dahulu sebelum transaksi.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      })
+      return
+    }
+  }
+
+  if (app.route) {
+    router.visit(route(app.route))
+  }
+}
 
 const apps = ref([
   {
@@ -33,7 +64,7 @@ const apps = ref([
   },
   {
     name: 'Transaksi',
-    route: '',
+    route: 'transaction.index',
     color: 'bg-blue-600',
     cashier: true,
     icon: `
@@ -90,6 +121,48 @@ const apps = ref([
       <h2 class="text-xl font-semibold leading-tight text-gray-200">Dashboard Aplikasi</h2>
     </template>
 
+    <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-white/10">
+      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1m0 16v1m18-1v1M3 12h18M12 3v18" />
+        </svg>
+        <h3 class="text-sm font-medium relative">Total Transaksi Hari Ini</h3>
+        <p class="text-2xl font-bold mt-2 relative">{{ dashboard.total_transactions }}</p>
+      </div>
+
+      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.5 0-3 .5-4.2 1.5S6 12 6 13.5 7.5 16 9 16h6c1.5 0 3-.5 4.2-1.5S21 12 21 10.5 19.5 8 18 8H12z" />
+        </svg>
+        <h3 class="text-sm font-medium relative">Total Penjualan Hari Ini</h3>
+        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.total_sales).toLocaleString() }}</p>
+      </div>
+
+      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V3m0 0L8 7m4-4l4 4m-4 10v3m0 0l-4-4m4 4l4-4" />
+        </svg>
+        <h3 class="text-sm font-medium relative">Kas Awal</h3>
+        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.opening_amount).toLocaleString() }}</p>
+      </div>
+
+      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        <h3 class="text-sm font-medium relative">Kas Saat Ini</h3>
+        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_cash).toLocaleString() }}</p>
+      </div>
+
+      <div v-if="dashboard.closing_amount" class="relative bg-red-600 p-4 shadow text-white overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <h3 class="text-sm font-medium relative">Kas Tutup</h3>
+        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.closing_amount).toLocaleString() }}</p>
+      </div>
+    </div>
+
     <div class="py-6">
       <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -99,6 +172,7 @@ const apps = ref([
             :href="app.route ? route(app.route) : '#'"
             class="flex flex-col items-center justify-center h-40 rounded-lg shadow-md text-white hover:scale-105 transition-transform duration-200"
             :class="role == 'cashier' && !app.cashier ? ' opacity-50 bg-gray-600 pointer-events-none' : app.color"
+            @click.prevent="handleAppClick(app)"
           >
             <div v-html="app.icon"></div>
             <span class="mt-3 font-semibold">{{ app.name }}</span>
