@@ -28,7 +28,7 @@ class DashboardController extends Controller
                 'total_sales' => $transactionsToday->sum('grand_total'),
                 'opening_amount' => $register?->opening_amount ?? 0,
                 'current_cash' => $register
-                    ? $register->opening_amount + $register->total_sales
+                    ? $register->opening_amount + $register->total_amount
                     : 0,
                 'status' => $register?->status ?? 'no_register',
             ],
