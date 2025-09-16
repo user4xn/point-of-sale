@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction.index');
     Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
+    Route::get('/transaction/search-product', [TransactionController::class, 'searchProduct'])->name('transaction.search');
+    Route::get('/transaction/print/{transaction}', [TransactionController::class, 'print'])->name('transaction.print');
+
 
     Route::get('/cash-register/check', [CashRegisterController::class, 'check'])->name('cash-register.check');
     Route::post('/cash-register/open', [CashRegisterController::class, 'open'])->name('cash-register.open');

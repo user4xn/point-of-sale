@@ -47,7 +47,9 @@ const openCash = async () => {
   })
 
   if (opening !== undefined) {
-    router.post(route('cash-register.open'), { opening_amount: opening })
+    router.post(route('cash-register.open'), { opening_amount: opening }, {
+      preserveState: false,
+    })
   }
 }
 
@@ -68,7 +70,9 @@ const closeCash = async () => {
   })
 
   if (closing !== undefined) {
-    router.post(route('cash-register.close'), { closing_amount: closing })
+    router.post(route('cash-register.close'), { closing_amount: closing }, {
+      preserveState: false,
+    })
   }
 }
 </script>

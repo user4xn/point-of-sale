@@ -37,6 +37,8 @@ const handleAppClick = async (app: any) => {
   }
 }
 
+const styleIconMetrics = 'absolute -right-6 -top-6 w-64 h-64 text-white/10'
+
 const apps = ref([
   {
     name: 'Produk',
@@ -44,10 +46,7 @@ const apps = ref([
     color: 'bg-green-600',
     cashier: true,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M20 13V7a2 2 0 00-2-2h-4V3H10v2H6a2 2 0 00-2 2v6M4 19h16a2 2 0 002-2v-2H2v2a2 2 0 002 2z" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package-search-icon lucide-package-search"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>
     `
   },
   {
@@ -56,10 +55,7 @@ const apps = ref([
     color: 'bg-teal-600',
     cashier: true,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M20 13V7a2 2 0 00-2-2h-4V3H10v2H6a2 2 0 00-2 2v6M4 19h16a2 2 0 002-2v-2H2v2a2 2 0 002 2z" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-container-icon lucide-container"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></svg>
     `
   },
   {
@@ -68,10 +64,7 @@ const apps = ref([
     color: 'bg-blue-600',
     cashier: true,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M3 10h18M9 21h6m-3-11V3" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-badge-dollar-sign-icon lucide-badge-dollar-sign"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
     `
   },
   {
@@ -80,10 +73,7 @@ const apps = ref([
     color: 'bg-purple-600',
     cashier: true,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9 17v-6h13M9 5v2h13M3 10h3M3 6h3M3 14h3M3 18h3" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
     `
   },
   {
@@ -92,9 +82,7 @@ const apps = ref([
     color: 'bg-yellow-600',
     cashier: false,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-round-icon lucide-users-round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>
 
     `
   },
@@ -104,10 +92,7 @@ const apps = ref([
     color: 'bg-red-600',
     cashier: false,
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M11.049 2.927c.3-1.14 1.902-1.14 2.202 0l.27 1.028a1 1 0 00.95.69h1.118c1.178 0 1.665 1.51.707 2.207l-.905.658a1 1 0 00-.364 1.118l.27 1.027c.3 1.14-.93 2.087-1.9 1.39l-.905-.658a1 1 0 00-1.176 0l-.905.658c-.97.697-2.2-.25-1.9-1.39l.27-1.027a1 1 0 00-.364-1.118l-.905-.658c-.958-.697-.471-2.207.707-2.207h1.118a1 1 0 00.95-.69l.27-1.028z" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sliders-horizontal-icon lucide-sliders-horizontal"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg>
     `
   }
 ])
@@ -123,43 +108,27 @@ const apps = ref([
 
     <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-white/10">
       <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1m0 16v1m18-1v1M3 12h18M12 3v18" />
-        </svg>
+        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
         <h3 class="text-sm font-medium relative">Total Transaksi Hari Ini</h3>
         <p class="text-2xl font-bold mt-2 relative">{{ dashboard.total_transactions }}</p>
       </div>
 
       <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.5 0-3 .5-4.2 1.5S6 12 6 13.5 7.5 16 9 16h6c1.5 0 3-.5 4.2-1.5S21 12 21 10.5 19.5 8 18 8H12z" />
-        </svg>
+        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-percent-icon lucide-percent"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
         <h3 class="text-sm font-medium relative">Total Penjualan Hari Ini</h3>
         <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.total_sales).toLocaleString() }}</p>
       </div>
 
       <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V3m0 0L8 7m4-4l4 4m-4 10v3m0 0l-4-4m4 4l4-4" />
-        </svg>
+        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-piggy-bank-icon lucide-piggy-bank"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg>
         <h3 class="text-sm font-medium relative">Kas Awal</h3>
         <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.opening_amount).toLocaleString() }}</p>
       </div>
 
       <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
+        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign-icon lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         <h3 class="text-sm font-medium relative">Kas Saat Ini</h3>
         <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_cash).toLocaleString() }}</p>
-      </div>
-
-      <div v-if="dashboard.closing_amount" class="relative bg-red-600 p-4 shadow text-white overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute -right-6 -bottom-6 w-32 h-32 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        <h3 class="text-sm font-medium relative">Kas Tutup</h3>
-        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.closing_amount).toLocaleString() }}</p>
       </div>
     </div>
 
@@ -169,7 +138,6 @@ const apps = ref([
           <Link
             v-for="app in apps"
             :key="app.name"
-            :href="app.route ? route(app.route) : '#'"
             class="flex flex-col items-center justify-center h-40 rounded-lg shadow-md text-white hover:scale-105 transition-transform duration-200"
             :class="role == 'cashier' && !app.cashier ? ' opacity-50 bg-gray-600 pointer-events-none' : app.color"
             @click.prevent="handleAppClick(app)"

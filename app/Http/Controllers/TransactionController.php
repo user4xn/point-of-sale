@@ -15,7 +15,6 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
         $settings = Setting::first();
         $cashRegister = CashRegister::whereNull('closed_at')
             ->whereDate('opened_at', now()->toDateString())
@@ -23,11 +22,22 @@ class TransactionController extends Controller
             ->first();
 
         return inertia('Transactions/Index', [
-            'products' => $products,
             'settings' => $settings,
             'cashier' => auth()->user(),
             'cashRegister' => $cashRegister,
         ]);
+    }
+
+    public function searchProduct(Request $request)
+    {
+        $query = $request->get('query');
+        $products = \App\Models\Product::query()
+            ->where('sku', $query)
+            ->orWhere('name', 'like', "%{$query}%")
+            ->limit(10)
+            ->get(['id', 'name', 'sku', 'sell_price', 'stock']);
+
+        return response()->json($products);
     }
 
     public function store(Request $request)
@@ -62,6 +72,10 @@ class TransactionController extends Controller
             $tax = ($total - $discount) * ($taxRate / 100);
             $grandTotal = $total - $discount + $tax;
             $change = $request->paid_amount - $grandTotal;
+
+            if ($request->paid_amount < $grandTotal) {
+                throw new \Exception("Uang customer tidak mencukupi");
+            }
 
             $trx = Transaction::create([
                 'invoice_number' => 'INV-' . now()->format('Ymd-His'),
@@ -103,13 +117,45 @@ class TransactionController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('transactions.index')
-                ->with('success', 'Transaksi berhasil disimpan')
-                ->with('print_struk', $trx->id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil disimpan',
+                'trx_id' => $trx->id,
+            ]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
+
+    public function print($id)
+    {
+        $trx = Transaction::with(['items.product', 'user'])->findOrFail($id);
+        $settings = Setting::first();
+
+        $formatRp = fn ($val) => 'Rp ' . number_format((float)$val, 0, ',', '.');
+
+        $trx->total_price   = $formatRp($trx->total_price);
+        $trx->discount      = $formatRp($trx->discount);
+        $trx->tax           = $formatRp($trx->tax);
+        $trx->grand_total   = $formatRp($trx->grand_total);
+        $trx->paid_amount   = $formatRp($trx->paid_amount);
+        $trx->change_amount = $formatRp($trx->change_amount);
+
+        $trx->items->transform(function ($item) {
+            $item->price    = number_format((float)$item->price, 0, ',', '.');
+            $item->subtotal = number_format((float)$item->subtotal, 0, ',', '.');
+            return $item;
+        });
+
+        return inertia('Print/Transaction', [
+            'trx' => $trx,
+            'settings' => $settings,
+        ]);
+    }
 }
+

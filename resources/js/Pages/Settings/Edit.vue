@@ -17,7 +17,7 @@ const form = useForm({
   store_name: props.setting?.store_name ?? '',
   store_address: props.setting?.store_address ?? '',
   store_contact: props.setting?.store_contact ?? '',
-  receipt_template: props.setting?.receipt_template ?? 'Terima kasih telah berbelanja di {{store_name}}',
+  receipt_template: props.setting?.receipt_template ?? 'Terima kasih telah berbelanja di [store_name]',
   store_logo: null as File | null,
   tax_rate: props.setting?.tax_rate ?? 0,
 })
@@ -28,6 +28,9 @@ const submit = () => {
   })
 }
 
+// helper format rupiah untuk preview
+const rupiah = (val: number) =>
+  "Rp " + val.toLocaleString("id-ID")
 
 const renderTemplate = () => {
   return form.receipt_template
@@ -156,7 +159,7 @@ const renderTemplate = () => {
         <div class="mb-2">
           <div>No. Order : <strong>#INV001</strong></div>
           <div>Tanggal   : {{ new Date().toLocaleString() }}</div>
-          <div>Kasir     : Admin</div>
+          <div>Kasir     : superadmin</div>
         </div>
 
         <hr class="border-gray-400 my-2" />
@@ -172,16 +175,24 @@ const renderTemplate = () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in [
-              { name: 'Indomie Goreng', qty: 2, price: 3500 },
-              { name: 'Aqua Botol', qty: 1, price: 5000 },
-              { name: 'Teh Kotak', qty: 3, price: 4500 }
-            ]" :key="item.name">
-              <td>{{ item.name }}</td>
-              <td class="text-right">{{ item.qty }}</td>
-              <td class="text-right">{{ item.price.toLocaleString() }}</td>
-              <td class="text-right">{{ (item.qty * item.price).toLocaleString() }}</td>
-            </tr>
+            <template v-for="item in [
+                { name: 'Indomie Goreng', qty: 2, price: 3500 },
+                { name: 'Aqua Botol', qty: 1, price: 5000 },
+                { name: 'Teh Kotak', qty: 3, price: 4500 }
+              ]" :key="item.name">
+              <tr>
+                <td>{{ item.name }}</td>
+                <td class="text-right">{{ item.qty }}</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td class="text-right">{{ item.price.toLocaleString("id-ID") }}</td>
+                <td class="text-right">{{ (item.qty * item.price).toLocaleString("id-ID") }}</td>
+              </tr>
+            </template>
           </tbody>
         </table>
 
@@ -191,23 +202,27 @@ const renderTemplate = () => {
         <div class="text-sm">
           <div class="flex justify-between">
             <span>Subtotal</span>
-            <span>Rp 26.500</span>
+            <span>{{ rupiah(26500) }}</span>
           </div>
           <div class="flex justify-between">
             <span>Diskon</span>
-            <span>Rp 1.500</span>
+            <span>{{ rupiah(1500) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Pajak ({{ form.tax_rate }}%)</span>
+            <span>{{ rupiah((26500 - 1500) * (form.tax_rate/100)) }}</span>
           </div>
           <div class="flex justify-between font-bold">
             <span>Grand Total</span>
-            <span>Rp 25.000</span>
+            <span>{{ rupiah(25000 + (26500 - 1500) * (form.tax_rate/100)) }}</span>
           </div>
           <div class="flex justify-between mt-2">
             <span>Cash</span>
-            <span>Rp 30.000</span>
+            <span>{{ rupiah(30000) }}</span>
           </div>
           <div class="flex justify-between">
             <span>Kembali</span>
-            <span>Rp 5.000</span>
+            <span>{{ rupiah(5000) }}</span>
           </div>
         </div>
 
@@ -219,8 +234,6 @@ const renderTemplate = () => {
           <p>Terima Kasih & Sampai Jumpa</p>
         </div>
       </div>
-
     </div>
-
   </AuthenticatedLayout>
 </template>

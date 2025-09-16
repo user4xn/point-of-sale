@@ -18,6 +18,7 @@ class DashboardController extends Controller
             ->get();
 
         $register = CashRegister::where('user_id', Auth::id())
+            ->where('status', 'open')
             ->latest()
             ->first();
 
@@ -29,7 +30,6 @@ class DashboardController extends Controller
                 'current_cash' => $register
                     ? $register->opening_amount + $register->total_sales
                     : 0,
-                'closing_amount' => $register?->closing_amount ?? null,
                 'status' => $register?->status ?? 'no_register',
             ],
         ]);
