@@ -30,8 +30,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/print/test', [PrintController::class, 'test'])->name('print.test');
     
+    Route::get('/transaction/cashier', [TransactionController::class, 'cashier'])->name('transaction.cashier');
+    Route::get('/transaction/today', [TransactionController::class, 'today'])->name('transaction.today');
     Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction.index');
     Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
+    Route::get('/transaction/detail/{transaction}', [TransactionController::class, 'detail'])->name('transaction.detail');
     Route::get('/transaction/search-product', [TransactionController::class, 'searchProduct'])->name('transaction.search');
     Route::get('/transaction/print/{transaction}', [TransactionController::class, 'print'])->name('transaction.print');
 

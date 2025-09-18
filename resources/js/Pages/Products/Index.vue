@@ -6,8 +6,6 @@ import Swal from 'sweetalert2'
 import { ref, watch } from 'vue'
 import Checkbox from '@/Components/Checkbox.vue'
 
-defineOptions({ layout: AuthenticatedLayout })
-
 const props = defineProps<{ 
   products: any, 
   categories: any[], 
@@ -72,123 +70,137 @@ const resetFilters = () => {
 <template>
   <Head title="Produk" />
 
-  <div class="p-6 text-white">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-xl font-bold">Daftar Produk</h1>
-      <Link
-        href="/products/create"
-        class="px-3 py-2 bg-blue-600 hover:bg-blue-600/80 font-semibold rounded text-white"
-      >
-        + Tambah Produk
-      </Link>
-    </div>
+  <AuthenticatedLayout>
+    <template #header>
+      <div class="flex gap-2">
+        <Link :href="route('dashboard')">
+          <h2 class="text-xl font-semibold leading-tight text-gray-200 hover:text-yellow-500 transition ease-in-out">Dashboard Aplikasi</h2>
+        </Link>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-white">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+        </svg>
+        <h2 class="text-xl font-semibold leading-tight text-gray-200 underline">Produk</h2>
+      </div>
+    </template>
 
-    <div class="filters mb-4 flex gap-2 flex-wrap w-full justify-start flex-stretch">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Cari produk..."
-        class="px-4 py-2 rounded-full bg-gray-700 border border-gray-600 text-white"
-      />
-
-      <select v-model="kategori" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
-        <option value=""> Semua Kategori </option>
-        <option v-for="category in categories" :value="category.id">{{ category.name }}</option>
-      </select>
-
-      <select v-model="supplier" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
-        <option value=""> Semua Supplier </option>
-        <option v-for="supplier in suppliers" :value="supplier.id">{{ supplier.name }}</option>
-      </select>
-
-      <select v-model="status" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
-        <option value=""> Semua Status </option>
-        <option value="active">Aktif</option>
-        <option value="inactive">Nonaktif</option>
-      </select>
-
-      <label class="flex items-center gap-2 text-sm">
-        <Checkbox v-model="emptyStock" :checked="false"/>
-        Stok Kosong
-      </label>
-
-      <button 
-        type="button"
-        @click="resetFilters"
-        class="px-3 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition"
-      >
-        Hapus Filter
-      </button>
-    </div>
-
-    <table class="w-full text-sm border border-gray-600 rounded">
-      <thead>
-        <tr class="bg-gray-600/50">
-          <th class="p-2 text-start">#</th>
-          <th class="p-2 text-start">Gambar</th>
-          <th class="p-2 text-start">Nama</th>
-          <th class="p-2 text-start">SKU</th>
-          <th class="p-2 text-start">Kategori</th>
-          <th class="p-2 text-start">Unit</th>
-          <th class="p-2 text-start">Supplier</th>
-          <th class="p-2 text-start">Harga Beli</th>
-          <th class="p-2 text-start">Harga Jual</th>
-          <th class="p-2 text-start">Stok</th>
-          <th class="p-2 text-start">Status</th>
-          <th class="p-2 text-end">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(product, i) in props.products.data"
-          :key="product.id"
-          class="hover:bg-white/10 transition"
+    <div class="p-6 text-white">
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl font-bold">Daftar Produk</h1>
+        <Link
+          href="/products/create"
+          class="px-3 py-2 bg-blue-600 hover:bg-blue-600/80 font-semibold rounded text-white"
         >
-          <td class="p-2">{{ props.products.from + i }}</td>
-          <td class="p-2">
-            <img
-              v-if="product.image"
-              :src="`/storage/${product.image}`"
-              alt="product"
-              class="h-12 w-12 object-contain rounded bg-gray-700"
-            />
-            <span v-else class="text-gray-400">-</span>
-          </td>
-          <td class="p-2">{{ product.name }}</td>
-          <td class="p-2">{{ product.sku }}</td>
-          <td class="p-2">{{ product.category?.name || '-' }}</td>
-          <td class="p-2">{{ product.unit?.name || '-' }}</td>
-          <td class="p-2">{{ product.supplier?.name || '-' }}</td>
-          <td class="p-2">Rp {{ Number(product.purchase_price).toLocaleString() }}</td>
-          <td class="p-2">Rp {{ Number(product.sell_price).toLocaleString() }}</td>
-          <td class="p-2">{{ product.stock }}</td>
-          <td class="p-2">
-            <span
-              :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"
-            >
-              {{ product.status === 'active' ? 'Aktif' : 'Nonaktif' }}
-            </span>
-          </td>
-          <td class="p-2">
-            <div class="flex gap-2 justify-end">
-              <Link
-                :href="`/products/${product.id}/edit`"
-                class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
-              >
-                Edit
-              </Link>
-              <button
-                @click="deleteProduct(product.id)"
-                class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          + Tambah Produk
+        </Link>
+      </div>
 
-    <Pagination :links="props.products.links" :users="props.products" />
-  </div>
+      <div class="filters mb-4 flex gap-2 flex-wrap w-full justify-start flex-stretch">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Cari produk..."
+          class="px-4 py-2 rounded-full bg-gray-700 border border-gray-600 text-white"
+        />
+
+        <select v-model="kategori" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+          <option value=""> Semua Kategori </option>
+          <option v-for="category in categories" :value="category.id">{{ category.name }}</option>
+        </select>
+
+        <select v-model="supplier" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+          <option value=""> Semua Supplier </option>
+          <option v-for="supplier in suppliers" :value="supplier.id">{{ supplier.name }}</option>
+        </select>
+
+        <select v-model="status" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+          <option value=""> Semua Status </option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Nonaktif</option>
+        </select>
+
+        <label class="flex items-center gap-2 text-sm">
+          <Checkbox v-model="emptyStock" :checked="false"/>
+          Stok Kosong
+        </label>
+
+        <button 
+          type="button"
+          @click="resetFilters"
+          class="px-3 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition"
+        >
+          Hapus Filter
+        </button>
+      </div>
+
+      <table class="w-full text-sm border border-gray-600 rounded">
+        <thead>
+          <tr class="bg-gray-600/50">
+            <th class="p-2 text-start">#</th>
+            <th class="p-2 text-start">Gambar</th>
+            <th class="p-2 text-start">Nama</th>
+            <th class="p-2 text-start">SKU</th>
+            <th class="p-2 text-start">Kategori</th>
+            <th class="p-2 text-start">Unit</th>
+            <th class="p-2 text-start">Supplier</th>
+            <th class="p-2 text-start">Harga Beli</th>
+            <th class="p-2 text-start">Harga Jual</th>
+            <th class="p-2 text-start">Stok</th>
+            <th class="p-2 text-start">Status</th>
+            <th class="p-2 text-end">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(product, i) in props.products.data"
+            :key="product.id"
+            class="hover:bg-white/10 transition"
+          >
+            <td class="p-2">{{ props.products.from + i }}</td>
+            <td class="p-2">
+              <img
+                v-if="product.image"
+                :src="`/storage/${product.image}`"
+                alt="product"
+                class="h-12 w-12 object-contain rounded bg-gray-700"
+              />
+              <span v-else class="text-gray-400">-</span>
+            </td>
+            <td class="p-2">{{ product.name }}</td>
+            <td class="p-2">{{ product.sku }}</td>
+            <td class="p-2">{{ product.category?.name || '-' }}</td>
+            <td class="p-2">{{ product.unit?.name || '-' }}</td>
+            <td class="p-2">{{ product.supplier?.name || '-' }}</td>
+            <td class="p-2">Rp {{ Number(product.purchase_price).toLocaleString() }}</td>
+            <td class="p-2">Rp {{ Number(product.sell_price).toLocaleString() }}</td>
+            <td class="p-2">{{ product.stock }}</td>
+            <td class="p-2">
+              <span
+                :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"
+              >
+                {{ product.status === 'active' ? 'Aktif' : 'Nonaktif' }}
+              </span>
+            </td>
+            <td class="p-2">
+              <div class="flex gap-2 justify-end">
+                <Link
+                  :href="`/products/${product.id}/edit`"
+                  class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
+                >
+                  Edit
+                </Link>
+                <button
+                  @click="deleteProduct(product.id)"
+                  class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <Pagination :links="props.products.links" :data="props.products" />
+    </div>
+  </AuthenticatedLayout>
 </template>

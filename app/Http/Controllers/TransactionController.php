@@ -13,7 +13,65 @@ use App\Models\CashRegisterTransaction;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
+    {
+        $query = Transaction::with('user')
+            ->when($request->search, fn($q) =>
+                $q->where('invoice_number', 'like', "%{$request->search}%")
+            )
+            ->latest();
+
+        $transactions = $query->paginate(10)->withQueryString();
+
+        $todayTrx = Transaction::whereDate('created_at', today());
+        $weekTrx = Transaction::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+        $monthTrx = Transaction::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+        $allTrx = Transaction::query();
+
+        $metrics = [
+            'today' => [
+                'total_transactions' => $todayTrx->count(),
+                'total_sales' => $todayTrx->sum('grand_total'),
+                'total_items' => TransactionItem::whereHas('transaction', fn($q) => 
+                    $q->whereDate('created_at', today())
+                )->sum('quantity'),
+            ],
+            'week' => [
+                'total_transactions' => $weekTrx->count(),
+                'total_sales' => $weekTrx->sum('grand_total'),
+            ],
+            'month' => [
+                'total_transactions' => $monthTrx->count(),
+                'total_sales' => $monthTrx->sum('grand_total'),
+            ],
+            'alltime' => [
+                'total_transactions' => $allTrx->count(),
+                'total_sales' => $allTrx->sum('grand_total'),
+            ]
+        ];
+
+        $metrics['today']['avg_transaction'] = $metrics['today']['total_transactions'] > 0
+            ? $metrics['today']['total_sales'] / $metrics['today']['total_transactions']
+            : 0;
+
+        return inertia('Transactions/Index', [
+            'transactions' => $transactions,
+            'dashboard' => $metrics,
+            'filters' => $request->only('search'),
+        ]);
+    }
+
+    public function detail($id)
+    {
+        $trx = Transaction::with(['items.product', 'user'])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'transaction' => $trx
+        ]);
+    }
+
+    public function cashier()
     {
         $settings = Setting::first();
         $cashRegister = CashRegister::whereNull('closed_at')
@@ -21,7 +79,7 @@ class TransactionController extends Controller
             ->latest()
             ->first();
 
-        return inertia('Transactions/Index', [
+        return inertia('Transactions/Cashier', [
             'settings' => $settings,
             'cashier' => auth()->user(),
             'cashRegister' => $cashRegister,
@@ -155,6 +213,19 @@ class TransactionController extends Controller
         return inertia('Print/Transaction', [
             'trx' => $trx,
             'settings' => $settings,
+        ]);
+    }
+
+    public function today()
+    {
+        $transactions = \App\Models\Transaction::withCount('items')
+            ->whereDate('created_at', today())
+            ->orderByDesc('created_at')
+            ->get(['id', 'invoice_number', 'grand_total', 'created_at']);
+
+        return response()->json([
+            'success' => true,
+            'transactions' => $transactions,
         ]);
     }
 }

@@ -76,7 +76,7 @@ const deleteUser = async (id: number) => {
         </tbody>
       </table>
 
-      <Pagination :links="props.users.links" :users="props.users" />
+      <Pagination :links="props.users.links" :data="props.users" />
     </div>
   </AuthenticatedLayout>
 </template>

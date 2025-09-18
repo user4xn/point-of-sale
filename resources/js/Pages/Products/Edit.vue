@@ -167,7 +167,7 @@ const submit = () => {
         <!-- Stok -->
         <div>
           <label class="block text-sm font-semibold mb-1">Stok</label>
-          <input v-model="form.stock" type="number" class="w-full border bg-gray-700 rounded p-2" />
+          <input disabled v-model="form.stock" type="number" class="w-full border bg-gray-700 rounded p-2" />
         </div>
 
         <!-- Status -->

@@ -4,7 +4,7 @@ import type { PaginationLink } from '@/types'
 
 defineProps<{
   links: PaginationLink[]
-  users: { from: number; to: number; total: number }
+  data: { from: number; to: number; total: number }
 }>()
 </script>
 
@@ -26,8 +26,8 @@ defineProps<{
     </div>
 
     <div>
-      Menampilkan {{ users.from }} s/d {{ users.to }} dari
-      {{ users.total }} data
+      Menampilkan {{ data.from }} s/d {{ data.to }} dari
+      {{ data.total }} data
     </div>
 </div>
 </template>
