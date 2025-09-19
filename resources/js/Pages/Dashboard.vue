@@ -19,7 +19,7 @@ const checkRegister = async () => {
 }
 
 const handleAppClick = async (app: any) => {
-  if (app.name === 'Transaksi') {
+  if (app.name === 'Mode Kasir') {
     const { open } = await checkRegister()
     if (!open) {
       await Swal.fire({

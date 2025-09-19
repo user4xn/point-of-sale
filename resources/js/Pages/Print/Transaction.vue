@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 
 onMounted(() => {
-  window.print()
+  // window.print()
 })
 
 </script>
@@ -40,26 +40,17 @@ onMounted(() => {
 
     <!-- Items -->
     <table class="w-full text-[12px]">
-      <thead>
-        <tr>
-          <th class="text-left">Item</th>
-          <th class="text-right">Qty</th>
-          <th class="text-right">Harga</th>
-          <th class="text-right">Total</th>
-        </tr>
-      </thead>
       <tbody>
         <template v-for="item in props.trx.items" :key="item.id">
           <tr class="py-[2px]">
-            <td>{{ item.product?.name }}</td>
+            <td colspan="2">{{ item.product?.name }}</td>
             <td class="text-right">{{ item.quantity }}</td>
-            <td></td>
-            <td></td>
+            <td class="text-right uppercase">{{ item.product?.unit.name }}</td>
           </tr>
           <tr>
             <td></td>
             <td></td>
-            <td class="text-right">{{ item.price.toLocaleString('id-ID') }}</td>
+            <td class="text-right pr-3">{{ item.price.toLocaleString('id-ID') }}</td>
             <td class="text-right">{{ item.subtotal.toLocaleString('id-ID') }}</td>
           </tr>
         </template>
@@ -79,15 +70,15 @@ onMounted(() => {
         <span>{{props.trx.discount}}</span>
       </div>
       <div class="flex justify-between">
-        <span>Pajak ({{ props.settings.tax_rate }}%)</span>
+        <span>PPN ({{ props.settings.tax_rate }}%)</span>
         <span>{{props.trx.tax}}</span>
       </div>
       <div class="flex justify-between font-bold">
-        <span>Grand Total</span>
+        <span>Total</span>
         <span>{{props.trx.grand_total}}</span>
       </div>
       <div class="flex justify-between mt-2">
-        <span>Cash</span>
+        <span>Tunai</span>
         <span>{{props.trx.paid_amount}}</span>
       </div>
       <div class="flex justify-between">
@@ -99,7 +90,7 @@ onMounted(() => {
     <hr class="border-t border-dashed border-gray-400 my-1" />
 
     <!-- Footer -->
-    <div class="text-center text-[11px] mt-2">
+    <div class="text-center text-xs mt-2">
       <p>
         *** {{
           props.settings.receipt_template

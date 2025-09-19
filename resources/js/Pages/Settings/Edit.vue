@@ -28,7 +28,6 @@ const submit = () => {
   })
 }
 
-// helper format rupiah untuk preview
 const rupiah = (val: number) =>
   "Rp " + val.toLocaleString("id-ID")
 
@@ -41,7 +40,7 @@ const renderTemplate = () => {
 </script>
 
 <template>
-  <Head title="Store Settings" />
+  <Head title="Pengaturan Toko" />
 
   <AuthenticatedLayout>
     <template #header>
@@ -57,7 +56,7 @@ const renderTemplate = () => {
     </template>
 
     <div class="flex flex-wrap gap-3 p-1">
-      <form @submit.prevent="submit" class="space-y-5 max-w-xl flex-1 p-4">
+      <form @submit.prevent="submit" class="space-y-5 flex-1 p-4">
         <!-- Store Name -->
         <div>
           <label class="block text-sm font-semibold mb-1">Nama Toko</label>
@@ -139,7 +138,7 @@ const renderTemplate = () => {
       </form>
   
       <!-- Receipt Preview -->
-      <div class="flex-1 bg-white text-black border border-gray-400 rounded p-4 text-sm font-mono w-[280px]">
+      <div class="bg-white text-black border border-gray-400 rounded p-4 text-sm font-mono w-[280]">
         <!-- Header -->
         <div class="text-center mb-3">
           <img
@@ -153,50 +152,41 @@ const renderTemplate = () => {
           <span class="block">{{ form.store_contact || 'Kontak' }}</span>
         </div>
 
-        <hr class="border-gray-400 my-2" />
+        <hr class="border-t border-dashed border-gray-400 my-1" />
 
         <!-- Order Info -->
         <div class="mb-2">
-          <div>No. Order : <strong>#INV001</strong></div>
+          <div>No. Order : <strong>INV-20250915-001123</strong></div>
           <div>Tanggal   : {{ new Date().toLocaleString() }}</div>
           <div>Kasir     : superadmin</div>
         </div>
 
-        <hr class="border-gray-400 my-2" />
+        <hr class="border-t border-dashed border-gray-400 my-1" />
 
         <!-- Order Items -->
         <table class="w-full text-xs">
-          <thead>
-            <tr>
-              <th class="text-left">Item</th>
-              <th class="text-right">Qty</th>
-              <th class="text-right">Harga</th>
-              <th class="text-right">Total</th>
-            </tr>
-          </thead>
           <tbody>
             <template v-for="item in [
-                { name: 'Indomie Goreng', qty: 2, price: 3500 },
-                { name: 'Aqua Botol', qty: 1, price: 5000 },
-                { name: 'Teh Kotak', qty: 3, price: 4500 }
+                { name: 'Indomie Goreng', qty: 2, price: 3500, unit: 'pcs' },
+                { name: 'Aqua Botol', qty: 1, price: 5000, unit: 'pcs' },
+                { name: 'Teh Kotak', qty: 3, price: 4500, unit: 'pcs' }
               ]" :key="item.name">
-              <tr>
-                <td>{{ item.name }}</td>
-                <td class="text-right">{{ item.qty }}</td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td class="text-right">{{ item.price.toLocaleString("id-ID") }}</td>
-                <td class="text-right">{{ (item.qty * item.price).toLocaleString("id-ID") }}</td>
-              </tr>
+               <tr class="py-[2px]">
+                  <td colspan="2">{{ item.name }}</td>
+                  <td class="text-right">{{ item.qty }}</td>
+                  <td class="text-right uppercase">{{ item.unit }}</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td class="text-right pr-3">{{ item.price.toLocaleString('id-ID') }}</td>
+                  <td class="text-right">{{ (item.qty * item.price).toLocaleString('id-ID') }}</td>
+                </tr>
             </template>
           </tbody>
         </table>
 
-        <hr class="border-gray-400 my-2" />
+        <hr class="border-t border-dashed border-gray-400 my-1" />
 
         <!-- Summary -->
         <div class="text-sm">
@@ -209,15 +199,15 @@ const renderTemplate = () => {
             <span>{{ rupiah(1500) }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Pajak ({{ form.tax_rate }}%)</span>
+            <span>PPN ({{ form.tax_rate }}%)</span>
             <span>{{ rupiah((26500 - 1500) * (form.tax_rate/100)) }}</span>
           </div>
           <div class="flex justify-between font-bold">
-            <span>Grand Total</span>
+            <span>Total</span>
             <span>{{ rupiah(25000 + (26500 - 1500) * (form.tax_rate/100)) }}</span>
           </div>
-          <div class="flex justify-between mt-2">
-            <span>Cash</span>
+          <div class="flex justify-between">
+            <span>Tunai</span>
             <span>{{ rupiah(30000) }}</span>
           </div>
           <div class="flex justify-between">
@@ -226,10 +216,10 @@ const renderTemplate = () => {
           </div>
         </div>
 
-        <hr class="border-gray-400 my-2" />
+        <hr class="border-t border-dashed border-gray-400 my-1" />
 
         <!-- Footer -->
-        <div class="text-center text-xs">
+        <div class="text-center text-xs mt-2">
           <p>*** {{ renderTemplate() }} ***</p>
           <p>Terima Kasih & Sampai Jumpa</p>
         </div>

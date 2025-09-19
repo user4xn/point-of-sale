@@ -8,6 +8,19 @@ export interface User {
   updated_at?: string
 }
 
+export interface CartItem {
+  product_id: number
+  sku: string
+  name: string
+  price: number
+  quantity: number
+  stock: number
+}
+
+export interface CategoryUnit {
+  id: number
+  name: string
+}
 
 export interface PaginationLink {
   url: string | null

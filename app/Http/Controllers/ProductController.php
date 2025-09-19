@@ -185,4 +185,32 @@ class ProductController extends Controller
             ]);
         }
     }
+
+    public function destroyUnit(Unit $unit)
+    {
+        try {
+            $unit->delete();
+            return redirect()->route('products.index')->with([
+                'flash' => ['success' => 'Unit berhasil dihapus'],
+            ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'flash' => ['error' => 'Gagal menghapus unit: ' . $e->getMessage()],
+            ]);
+        }
+    }
+
+    public function destroyCategory(Category $category)
+    {
+        try {
+            $category->delete();
+            return redirect()->route('products.index')->with([
+                'flash' => ['success' => 'Kategori berhasil dihapus'],
+            ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'flash' => ['error' => 'Gagal menghapus kategori: ' . $e->getMessage()],
+            ]);
+        }
+    }
 }

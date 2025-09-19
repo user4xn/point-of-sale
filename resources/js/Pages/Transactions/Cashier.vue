@@ -6,6 +6,11 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import Swal from 'sweetalert2'
 import AfterPayModal from '@/Components/AfterPayModal.vue'
+import { CartItem } from '@/types'
+
+onMounted(() => {
+  setInterval(() => (now.value = new Date()), 1000)
+})
 
 const props = defineProps<{
   settings: any
@@ -13,31 +18,20 @@ const props = defineProps<{
   cashRegister: any
 }>()
 
-// realtime clock
 const now = ref<Date>(new Date())
-onMounted(() => setInterval(() => (now.value = new Date()), 1000))
-
-// cart
-interface CartItem {
-  product_id: number
-  sku: string
-  name: string
-  price: number
-  quantity: number
-  stock: number
-}
 const cart = ref<CartItem[]>([])
-
-const subtotal = computed(() =>
-  cart.value.reduce((t, i) => t + i.price * i.quantity, 0)
-)
-
-const tax = computed(() =>
-  (subtotal.value * (props.settings.tax_rate || 0)) / 100
-)
-
-const grandTotal = computed(() => subtotal.value + tax.value)
 const change = ref(0)
+const showPayModal = ref(false)
+const cashInputRef = ref<HTMLInputElement | null>(null)
+const cashInputRaw = ref<number>(0)
+const search = ref<string>('')
+const showProductModal = ref(false)
+const searchResults = ref<any[]>([])
+const searchError = ref(false)
+const showTodayTrxModal = ref(false)
+const todayTrx = ref<any[]>([])
+const showAfterPayModal = ref(false)
+const lastTrxId = ref<number | null>(null)
 
 const form = ref({
   customer_name: '',
@@ -45,13 +39,15 @@ const form = ref({
   paid_amount: 0,
 })
 
-// === Modal Bayar ===
-const showPayModal = ref(false)
-const cashInput = ref<number>(0)
-const cashInputRef = ref<HTMLInputElement | null>(null)
-const cashInputRaw = ref<number>(0)
-
-// computed buat formatting
+const subtotal = computed(() =>
+  cart.value.reduce((t, i) => t + i.price * i.quantity, 0)
+)
+const tax = computed(() =>
+  (subtotal.value * (props.settings.tax_rate || 0)) / 100
+)
+const grandTotal = computed(() => 
+  subtotal.value + tax.value
+)
 const formattedCashInput = computed({
   get: () =>
     cashInputRaw.value
@@ -61,14 +57,29 @@ const formattedCashInput = computed({
           .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
       : "",
   set: (val: string) => {
-    // buang semua selain angka
     const numeric = val.replace(/\D/g, "")
     cashInputRaw.value = numeric ? parseInt(numeric) : 0
   },
 })
+const canPay = computed(() => {
+  if (!cart.value.length) return false
+  if (grandTotal.value <= 0) return false
+  for (const i of cart.value) {
+    if (i.quantity < 1 || i.quantity > i.stock) return false
+  }
+  return true
+})
 
-const showTodayTrxModal = ref(false)
-const todayTrx = ref<any[]>([])
+watch(
+  cart,
+  (items) => {
+    items.forEach((i) => {
+      if (i.quantity < 1) i.quantity = 1
+      if (i.quantity > i.stock) i.quantity = i.stock
+    })
+  },
+  { deep: true }
+)
 
 const openTodayTrxModal = async () => {
   const res = await axios.get(route('transaction.today'))
@@ -84,9 +95,6 @@ const openPayModal = () => {
     cashInputRef.value?.focus()
   })
 }
-
-const showAfterPayModal = ref(false)
-const lastTrxId = ref<number | null>(null)
 
 const confirmPayment = () => {
   form.value.items = cart.value.map((i) => ({
@@ -127,12 +135,6 @@ const handlePrint = (id: number | null) => {
   (window as any).open(route('transaction.print', id), '_blank')
 }
 
-// === Search Produk ===
-const search = ref<string>('')
-const showProductModal = ref(false)
-const searchResults = ref<any[]>([])
-const searchError = ref(false)
-
 const handleSearch = async () => {
   if (!search.value) return
   try {
@@ -150,7 +152,6 @@ const handleSearch = async () => {
       showProductModal.value = true
       searchError.value = false
     } else {
-      // produk tidak ditemukan → kasih border merah
       searchError.value = true
     }
   } catch (err) {
@@ -176,28 +177,6 @@ const addToCart = (product: any) => {
     })
   }
 }
-
-// 🚫 pastikan qty selalu valid
-watch(
-  cart,
-  (items) => {
-    items.forEach((i) => {
-      if (i.quantity < 1) i.quantity = 1
-      if (i.quantity > i.stock) i.quantity = i.stock
-    })
-  },
-  { deep: true }
-)
-
-// ✅ disable tombol Bayar jika ada invalid
-const canPay = computed(() => {
-  if (!cart.value.length) return false
-  if (grandTotal.value <= 0) return false
-  for (const i of cart.value) {
-    if (i.quantity < 1 || i.quantity > i.stock) return false
-  }
-  return true
-})
 </script>
 
 <template>

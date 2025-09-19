@@ -45,6 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('suppliers', SupplierController::class);
     Route::resource('products', ProductController::class);
+    Route::delete('products/unit/{unit}', [ProductController::class, 'destroyUnit']);
+    Route::delete('products/category/{category}', [ProductController::class, 'destroyCategory']);
 });
 
 Route::middleware(['auth', 'verified', 'can:admin-only'])->group(function () {

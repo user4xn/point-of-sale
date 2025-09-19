@@ -192,7 +192,7 @@ class TransactionController extends Controller
 
     public function print($id)
     {
-        $trx = Transaction::with(['items.product', 'user'])->findOrFail($id);
+        $trx = Transaction::with(['items.product.unit', 'user'])->findOrFail($id);
         $settings = Setting::first();
 
         $formatRp = fn ($val) => 'Rp ' . number_format((float)$val, 0, ',', '.');
