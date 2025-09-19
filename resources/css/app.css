@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.dark-select {
+    --vs-background-color: #374151;
+    --vs-text-color: #fff;
+    --vs-placeholder-color: #fff;
+    --vs-menu-background-color: var(--vs-background-color);
+    --vs-menu-z-index: 500;
+    --vs-option-text-color: var(--vs-text-color);
+    --vs-option-hover-text-color: var(--vs-background-color);
+}

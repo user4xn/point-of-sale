@@ -9,6 +9,7 @@ use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\StockOpnameController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::delete('products/unit/{unit}', [ProductController::class, 'destroyUnit']);
     Route::delete('products/category/{category}', [ProductController::class, 'destroyCategory']);
+
+    Route::get('stock-opnames/', [StockOpnameController::class, 'index'])->name('stockopname.index');
+    Route::get('stock-opnames/create', [StockOpnameController::class, 'create'])->name('stockopname.create');
+    Route::post('stock-opnames/', [StockOpnameController::class, 'store'])->name('stockopname.store');
+    Route::get('stock-opnames/{id}', [StockOpnameController::class, 'show'])->name('stockopname.show');
+    Route::post('stock-opnames/{id}/confirm', [StockOpnameController::class, 'confirm'])->name('stockopname.confirm');
 });
 
 Route::middleware(['auth', 'verified', 'can:admin-only'])->group(function () {

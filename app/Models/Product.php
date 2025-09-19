@@ -31,4 +31,8 @@ class Product extends Model
     public function supplier() {
         return $this->belongsTo(Supplier::class);
     }
+
+    public function stockOpnameItems() {
+        return $this->hasMany(StockOpnameItem::class, 'product_id');
+    }
 }

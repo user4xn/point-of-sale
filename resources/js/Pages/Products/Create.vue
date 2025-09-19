@@ -108,6 +108,7 @@ const triggerFilePicker = () => {
           <label class="block text-sm font-semibold mb-1">Kategori</label>
           <div class="w-full bg-gray-700 text-white border border-gray-600 rounded"></div>
           <VueSelect
+            class="dark-select"
             v-model="form.category_id"
             :options="props.categories.map(c => ({ value: c.id, label: c.name }))"
             placeholder="Pilih / Ketik Kategori Baru"
@@ -120,6 +121,7 @@ const triggerFilePicker = () => {
         <div>
           <label class="block text-sm font-semibold mb-1">Unit (Satuan)</label>
           <VueSelect
+            class="dark-select"
             v-model="form.unit_id"
             :options="props.units.map(u => ({ value: u.id, label: u.name }))"
             placeholder="Pilih / Ketik Unit Baru"
@@ -132,6 +134,7 @@ const triggerFilePicker = () => {
         <div>
           <label class="block text-sm font-semibold mb-1">Supplier</label>
           <VueSelect
+            class="dark-select"
             v-model="form.supplier_id"
             :options="props.suppliers.map(s => ({ value: s.id, label: s.name }))"
             placeholder="Pilih / Ketik Supplier Baru"
