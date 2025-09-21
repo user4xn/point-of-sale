@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
-import Swal from 'sweetalert2';
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 
 const page = usePage();
+const $swal = inject('swal') as any
 const role = page.props.auth.user?.role || 'cashier';
 
 const props = defineProps<{
@@ -22,14 +22,7 @@ const handleAppClick = async (app: any) => {
   if (app.name === 'Mode Kasir') {
     const { open } = await checkRegister()
     if (!open) {
-      await Swal.fire({
-        customClass: {
-          container: 'bg-gray-800 text-white',
-          popup: 'bg-gray-800 text-white',
-          input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-          confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-          cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-        },
+      await $swal.fire({
         title: 'Kas belum dibuka',
         text: 'Silakan buka kas terlebih dahulu sebelum transaksi.',
         icon: 'warning',

@@ -2,19 +2,13 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
-import Swal from 'sweetalert2'
+import { inject } from 'vue';
 
 const props = defineProps<{ suppliers: any }>()
+const $swal = inject('swal') as any
 
 const deleteSupplier = async (id: number) => {
-  const result = await Swal.fire({
-    customClass: {
-      container: 'bg-gray-800 text-white',
-      popup: 'bg-gray-800 text-white',
-      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-    },
+  const result = await $swal.fire({
     title: 'Konfimasi Hapus',
     text: 'data yang dihapus tidak dapat dikembalikan',
     icon: 'warning',

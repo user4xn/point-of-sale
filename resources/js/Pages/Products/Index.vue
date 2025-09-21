@@ -2,8 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
-import Swal from 'sweetalert2'
-import { ref, watch } from 'vue'
+import { inject, ref, watch } from 'vue'
 import Checkbox from '@/Components/Checkbox.vue'
 import Modal from '@/Components/Modal.vue'
 import { CategoryUnit } from '@/types'
@@ -21,7 +20,7 @@ const props = defineProps<{
     empty_stock?: boolean
   } 
 }>()
-
+const $swal = inject('swal') as any
 const search = ref(props.filters.search || '')
 const kategori = ref(props.filters.kategori || '')
 const supplier = ref(props.filters.supplier || '')
@@ -45,14 +44,7 @@ watch([search, kategori, supplier, status, emptyStock], (value) => {
 })
 
 const deleteProduct = async (id: number) => {
-  const result = await Swal.fire({
-    customClass: {
-      container: 'bg-gray-800 text-white',
-      popup: 'bg-gray-800 text-white',
-      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-    },
+  const result = await $swal.fire({
     title: 'Konfirmasi Hapus',
     text: 'Data produk yang dihapus tidak bisa dikembalikan!',
     icon: 'warning',
@@ -79,14 +71,7 @@ const resetFilters = () => {
 
 const deleteCategory = async (c: CategoryUnit) => {
   showModalCategory.value = false
-  const result = await Swal.fire({
-    customClass: {
-      container: 'bg-gray-800 text-white',
-      popup: 'bg-gray-800 text-white',
-      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-    },
+  const result = await $swal.fire({
     title: 'Hapus '+ c.name + '?',
     text: 'Data kategori yang dihapus tidak bisa dikembalikan, dan produk yang menggunakan kategori ini akan menjadi non kategori!',
     icon: 'warning',
@@ -103,14 +88,7 @@ const deleteCategory = async (c: CategoryUnit) => {
 
 const deleteUnit = async (c: CategoryUnit) => {
   showModalUnit.value = false
-  const result = await Swal.fire({
-    customClass: {
-      container: 'bg-gray-800 text-white',
-      popup: 'bg-gray-800 text-white',
-      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-    },
+  const result = await $swal.fire({
     title: 'Hapus '+ c.name + '?',
     text: 'Data unit yang dihapus tidak bisa dikembalikan, dan produk yang menggunakan unit ini akan menjadi non unit!',
     icon: 'warning',

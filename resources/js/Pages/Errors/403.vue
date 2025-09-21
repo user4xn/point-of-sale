@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Swal from 'sweetalert2'
-import { onMounted } from 'vue'
+import { inject, onMounted } from 'vue'
 
 const props = defineProps<{ message?: string }>()
+const $swal = inject('swal') as any
 
 onMounted(() => {
-  Swal.fire('Akses Ditolak', props.message ?? 'Anda tidak punya izin.', 'error')
+  $swal.fire('Akses Ditolak', props.message ?? 'Anda tidak punya izin.', 'error')
 })
 </script>
 

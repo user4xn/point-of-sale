@@ -2,8 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
-import Swal from 'sweetalert2'
-import { ref, watch } from 'vue'
+import { inject, ref, watch } from 'vue'
 
 const props = defineProps<{ 
   opnames: any,
@@ -18,6 +17,7 @@ const props = defineProps<{
 }>()
 
 const search = ref(props.filters.search || '')
+const $swal = inject('swal') as any
 
 watch(search, (val) => {
   router.get(
@@ -28,14 +28,7 @@ watch(search, (val) => {
 })
 
 const deleteOpname = async (id: number) => {
-  const result = await Swal.fire({
-    customClass: {
-      container: 'bg-gray-800 text-white',
-      popup: 'bg-gray-800 text-white',
-      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-    },
+  const result = await $swal.fire({
     title: 'Konfirmasi Hapus',
     text: 'Data opname yang dihapus tidak bisa dikembalikan!',
     icon: 'warning',

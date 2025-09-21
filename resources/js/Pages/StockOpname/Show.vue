@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import Swal from 'sweetalert2'
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 
 defineOptions({ layout: AuthenticatedLayout })
 
 const props = defineProps<{ opname: any }>()
+const $swal = inject('swal') as any
 
 const isExpired = computed(() => {
   const created = new Date(props.opname.created_at)
@@ -16,7 +16,7 @@ const isExpired = computed(() => {
 })
 
 const confirmOpname = (id: number) => {
-  Swal.fire({
+  $swal.fire({
     title: 'Konfirmasi Opname?',
     text: 'Stok produk akan diperbarui sesuai hasil opname!',
     icon: 'warning',

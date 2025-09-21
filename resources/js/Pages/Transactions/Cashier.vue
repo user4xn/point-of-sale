@@ -2,9 +2,8 @@
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import axios from 'axios'
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import Modal from '@/Components/Modal.vue'
-import Swal from 'sweetalert2'
 import AfterPayModal from '@/Components/AfterPayModal.vue'
 import { CartItem } from '@/types'
 
@@ -18,6 +17,7 @@ const props = defineProps<{
   cashRegister: any
 }>()
 
+const $swal = inject('swal') as any
 const now = ref<Date>(new Date())
 const cart = ref<CartItem[]>([])
 const change = ref(0)
@@ -113,14 +113,7 @@ const confirmPayment = () => {
         cart.value = []
         form.value = { customer_name: '', items: [], paid_amount: 0 }
 
-        Swal.fire({
-          customClass: {
-            container: 'bg-gray-800 text-white',
-            popup: 'bg-gray-800 text-white',
-            input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
-            confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
-            cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
-          },
+        $swal.fire({
           icon: 'success',
           title: 'Berhasil',
           text: 'Transaksi berhasil disimpan!',
@@ -129,11 +122,11 @@ const confirmPayment = () => {
           showAfterPayModal.value = true
         })
       } else {
-        Swal.fire('Error', res.data.message, 'error')
+        $swal.fire('Error', res.data.message, 'error')
       }
     })
     .catch((err) => {
-      Swal.fire('Error', err.data.message, 'error')
+      $swal.fire('Error', err.data.message, 'error')
     })
 }
 
