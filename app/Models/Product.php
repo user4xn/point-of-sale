@@ -35,4 +35,9 @@ class Product extends Model
     public function stockOpnameItems() {
         return $this->hasMany(StockOpnameItem::class, 'product_id');
     }
+
+    public function unitConversions()
+    {
+        return $this->hasMany(ProductUnitConversion::class);
+    }
 }

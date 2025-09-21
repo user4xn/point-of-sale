@@ -29,10 +29,19 @@ const form = useForm({
   description: props.product.description ?? '',
   status: props.product.status,
   image: null as File | null,
+  unit_conversions: props.product.unit_conversions ?? [],
   new_category: '',
   new_unit: '',
   new_supplier: '',
 })
+
+const addUnitConversion = () => {
+  form.unit_conversions.push({ unit_name: '', conversion: 1, purchase_price: null })
+}
+
+const removeUnitConversion = (i: number) => {
+  form.unit_conversions.splice(i, 1)
+}
 
 const imagePreview = ref<string | null>(
   props.product.image ? `/storage/${props.product.image}` : null
@@ -100,7 +109,43 @@ const submit = () => {
       </Link>
     </div>
 
-    <form @submit.prevent="submit" class="grid grid-cols-2 gap-6">
+    <!-- Konversi Satuan -->
+    <div class="mb-4 p-4 bg-white/10 rounded-md">
+      <div>
+        <label class="block text-lg font-semibold mb-1">Satuan Konversi</label>
+        <table class="w-full text-sm border border-gray-600 rounded">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="p-2 text-start">Nama Unit</th>
+              <th class="p-2 text-start">Konversi</th>
+              <th class="p-2 text-start">Harga Beli (opsional)</th>
+              <th class="p-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(uc, i) in form.unit_conversions" :key="i">
+              <td class="p-2">
+                <input v-model="uc.unit_name" type="text" class="w-full border bg-gray-700 rounded p-2"/>
+              </td>
+              <td class="p-2">
+                <input v-model.number="uc.conversion" type="number" min="1" class="w-full border bg-gray-700 rounded p-2"/>
+              </td>
+              <td class="p-2">
+                <input v-model.number="uc.purchase_price" type="number" class="w-full border bg-gray-700 rounded p-2"/>
+              </td>
+              <td class="p-2">
+                <button @click="removeUnitConversion(i)" type="button" class="px-2 py-1 bg-red-600 rounded text-white">Hapus</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button @click="addUnitConversion" type="button" class="mt-2 px-3 py-1 bg-green-600 rounded text-white">+ Tambah Satuan</button>
+      </div>
+    </div>
+
+    <hr class="border-t border-gray-600 my-4">
+
+    <form @submit.prevent="submit" class="grid grid-cols-2 gap-6 mt-4">
       <!-- Form Kiri -->
       <div class="space-y-5">
         <!-- Nama -->
@@ -190,7 +235,7 @@ const submit = () => {
       </div>
 
       <!-- Upload Gambar -->
-      <div class="flex flex-col items-center p-4">
+      <div class="flex flex-col items-center p-4 pr-0">
         <div
           class="w-full flex items-center justify-center bg-gray-700 rounded-lg overflow-hidden mb-3 cursor-pointer hover:opacity-80 transition flex-col"
           @click="triggerFilePicker"

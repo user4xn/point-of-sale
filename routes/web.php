@@ -10,6 +10,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\PurchaseReturController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +56,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('stock-opnames/', [StockOpnameController::class, 'store'])->name('stockopname.store');
     Route::get('stock-opnames/{id}', [StockOpnameController::class, 'show'])->name('stockopname.show');
     Route::post('stock-opnames/{id}/confirm', [StockOpnameController::class, 'confirm'])->name('stockopname.confirm');
+
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::post('purchase-orders/{purchaseOrder}/void', [PurchaseOrderController::class, 'void'])->name('purchase-orders.void');
+    Route::resource('purchase-returns', PurchaseReturnController::class);
 });
 
 Route::middleware(['auth', 'verified', 'can:admin-only'])->group(function () {

@@ -178,7 +178,7 @@ const triggerFilePicker = () => {
       </div>
 
       <!-- Upload Gambar -->
-      <div class="flex flex-col items-center p-4">
+      <div class="flex flex-col items-center p-4 pr-0">
         <div
           class="w-full flex items-center justify-center bg-gray-700 rounded-lg overflow-hidden mb-3 cursor-pointer hover:opacity-80 transition flex-col"
           @click="triggerFilePicker"

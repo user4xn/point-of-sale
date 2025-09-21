@@ -110,7 +110,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         return Inertia::render('Products/Edit', [
-            'product' => $product->load(['category','unit','supplier']),
+            'product' => $product->load(['category','unit','supplier', 'unitConversions']),
             'categories' => Category::all(),
             'units' => Unit::all(),
             'suppliers' => Supplier::all(),
@@ -158,6 +158,19 @@ class ProductController extends Controller
             if ($request->new_supplier) {
                 $supplier = Supplier::create(['name' => $request->new_supplier]);
                 $data['supplier_id'] = $supplier->id;
+            }
+
+            if ($request->unit_conversions) {
+                $product->unitConversions()->delete();
+                foreach ($request->unit_conversions as $uc) {
+                    if (!empty($uc['unit_name']) && !empty($uc['conversion'])) {
+                        $product->unitConversions()->create([
+                            'unit_name' => $uc['unit_name'],
+                            'conversion' => $uc['conversion'],
+                            'purchase_price' => $uc['purchase_price'] ?? null,
+                        ]);
+                    }
+                }
             }
 
             $product->update($data);
