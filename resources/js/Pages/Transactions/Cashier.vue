@@ -114,6 +114,13 @@ const confirmPayment = () => {
         form.value = { customer_name: '', items: [], paid_amount: 0 }
 
         Swal.fire({
+          customClass: {
+            container: 'bg-gray-800 text-white',
+            popup: 'bg-gray-800 text-white',
+            input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
+            confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
+            cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
+          },
           icon: 'success',
           title: 'Berhasil',
           text: 'Transaksi berhasil disimpan!',

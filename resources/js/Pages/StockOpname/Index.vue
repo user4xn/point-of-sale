@@ -29,6 +29,13 @@ watch(search, (val) => {
 
 const deleteOpname = async (id: number) => {
   const result = await Swal.fire({
+    customClass: {
+      container: 'bg-gray-800 text-white',
+      popup: 'bg-gray-800 text-white',
+      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
+      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
+      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
+    },
     title: 'Konfirmasi Hapus',
     text: 'Data opname yang dihapus tidak bisa dikembalikan!',
     icon: 'warning',
@@ -45,7 +52,7 @@ const deleteOpname = async (id: number) => {
 </script>
 
 <template>
-  <Head title="Stock Opname" />
+  <Head title="Stok Opname" />
 
   <AuthenticatedLayout>
     <template #header>
@@ -70,7 +77,7 @@ const deleteOpname = async (id: number) => {
         <h2
           class="text-xl font-semibold leading-tight text-gray-200 underline"
         >
-          Stock Opname
+          Stok Opname
         </h2>
       </div>
     </template>

@@ -23,6 +23,13 @@ const handleAppClick = async (app: any) => {
     const { open } = await checkRegister()
     if (!open) {
       await Swal.fire({
+        customClass: {
+          container: 'bg-gray-800 text-white',
+          popup: 'bg-gray-800 text-white',
+          input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
+          confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
+          cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
+        },
         title: 'Kas belum dibuka',
         text: 'Silakan buka kas terlebih dahulu sebelum transaksi.',
         icon: 'warning',

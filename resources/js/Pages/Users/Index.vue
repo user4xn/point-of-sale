@@ -11,6 +11,13 @@ const props = defineProps<{
 
 const deleteUser = async (id: number) => {
   const result = await Swal.fire({
+    customClass: {
+      container: 'bg-gray-800 text-white',
+      popup: 'bg-gray-800 text-white',
+      input: 'bg-gray-600 border border-gray-500 text-white rounded-full',
+      confirmButton: 'bg-green-600 hover:bg-green-500 text-white text-md font-semibold',
+      cancelButton: 'bg-red-600 hover:bg-red-500 text-white text-md font-semibold',
+    },
     title: 'Konfimasi Hapus',
     text: 'data yang dihapus tidak dapat dikembalikan',
     icon: 'warning',

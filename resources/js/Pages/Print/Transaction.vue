@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 
 onMounted(() => {
-  // window.print()
+  window.print()
 })
 
 </script>

@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { inject, ref, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import Swal from 'sweetalert2';
 
 const showingNavigationDropdown = ref(false);
 
 const page = usePage();
+const $swal = inject('swal') as any
 
 watch(
   () => page.props.flash,
   (flash) => {
     if (flash?.success) {
-      Swal.fire('Berhasil', flash.success, 'success')
+      $swal.fire('Berhasil', flash.success, 'success')
     }
     if (flash?.error) {
-      Swal.fire('Gagal', flash.error, 'error')
+      $swal.fire('Gagal', flash.error, 'error')
     }
   },
   { deep: true, immediate: true }
@@ -33,15 +33,15 @@ const checkRegister = async () => {
 const openCash = async () => {
   const { open } = await checkRegister()
   if (open) {
-    return Swal.fire('Peringatan', 'Kas sudah dibuka, tutup dulu sebelum buka baru.', 'warning')
+    return $swal.fire('Peringatan', 'Kas sudah dibuka, tutup dulu sebelum buka baru.', 'warning')
   }
 
-  const { value: opening } = await Swal.fire({
+  const { value: opening } = await $swal.fire({
     title: 'Buka Kas',
     input: 'number',
     inputLabel: 'Saldo awal',
     inputPlaceholder: 'Masukkan saldo kas awal',
-    confirmButtonText: 'Buka',
+    confirmButtonText: 'Buka!',
     cancelButtonText: 'Batal',
     showCancelButton: true,
   })
@@ -56,10 +56,10 @@ const openCash = async () => {
 const closeCash = async () => {
   const { open } = await checkRegister()
   if (!open) {
-    return Swal.fire('Peringatan', 'Tidak ada kas terbuka untuk ditutup.', 'warning')
+    return $swal.fire('Peringatan', 'Tidak ada kas terbuka untuk ditutup.', 'warning')
   }
   
-  const { value: closing } = await Swal.fire({
+  const { value: closing } = await $swal.fire({
     title: 'Tutup Kas',
     input: 'number',
     inputLabel: 'Saldo akhir',
