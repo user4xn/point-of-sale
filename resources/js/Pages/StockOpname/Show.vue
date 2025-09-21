@@ -25,7 +25,7 @@ const confirmOpname = (id: number) => {
     cancelButtonColor: '#d33',
     confirmButtonText: 'Ya, Konfirmasi',
     cancelButtonText: 'Batal',
-  }).then((res) => {
+  }).then((res: any) => {
     if (res.isConfirmed) {
       router.post(`/stock-opnames/${id}/confirm`)
     }
