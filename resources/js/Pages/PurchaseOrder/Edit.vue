@@ -65,6 +65,10 @@ const voidOrder = () => {
     }
   })
 }
+
+const handlePrint = () => {
+  window.open(`/purchase-orders/${props.order.id}/print`, '_blank')
+}
 </script>
 
 <template>
@@ -180,6 +184,7 @@ const voidOrder = () => {
         <div class="flex gap-3">
             <button
               type="button"
+              @click="handlePrint()"
               class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-semibold"
             >
               Print / Save PDF

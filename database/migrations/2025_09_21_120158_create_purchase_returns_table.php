@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('return_number')->unique();
             $table->date('return_date');
             $table->decimal('total', 15, 2)->default(0);
+            $table->text('reason')->nullable();
             $table->enum('status', ['draft', 'completed', 'void'])->default('draft');
             $table->timestamps();
         });

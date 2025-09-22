@@ -13,6 +13,7 @@ class PurchaseReturnItem extends Model
         'quantity',
         'price',
         'subtotal',
+        'note',
     ];
 
     public function purchaseReturn()

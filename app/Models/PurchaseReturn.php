@@ -12,6 +12,7 @@ class PurchaseReturn extends Model
         'return_date',
         'total',
         'status',
+        'reason',
     ];
 
     public function supplier()

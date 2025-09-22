@@ -105,7 +105,7 @@ const apps = ref([
   },
   {
     name: 'Purchase Retur (PR)',
-    route: '',
+    route: 'purchase-returns.index',
     color: 'bg-amber-400',
     cashier: true,
     icon: `
@@ -115,7 +115,7 @@ const apps = ref([
   {
     name: 'Pengaturan Pengguna',
     route: 'users.index',
-    color: 'bg-purple-900',
+    color: 'bg-blue-400',
     cashier: false,
     icon: `
       <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-round-icon lucide-users-round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>

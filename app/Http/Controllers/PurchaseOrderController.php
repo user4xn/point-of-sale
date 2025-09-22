@@ -10,6 +10,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PurchaseOrderController extends Controller
 {
@@ -23,6 +24,10 @@ class PurchaseOrderController extends Controller
         if ($request->status) {
             $orders->where('status', $request->status);
         }
+        if ($request->search) {
+            $orders->where('po_number', 'like', '%'.$request->search.'%');
+        }
+
 
         $orders = $orders->paginate(10)->withQueryString();
 
@@ -42,7 +47,6 @@ class PurchaseOrderController extends Controller
             'metrics'   => $metrics,
         ]);
     }
-
 
     public function create()
     {
@@ -192,5 +196,22 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->update(['status' => 'void']);
 
         return redirect()->route('purchase-orders.index')->with('flash', ['success' => 'PO berhasil di-void & stok dikembalikan']);
+    }
+
+    public function print(PurchaseOrder $purchaseOrder)
+    {
+        $po = $purchaseOrder->load([
+            'items.product.unit',
+            'items.unitConversion',
+            'supplier'
+        ]);
+        $setting = Setting::first();
+
+        $pdf = Pdf::loadView('pdf.purchase_order', [
+            'po' => $po,
+            'setting' => $setting,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("PO-{$po->po_number}.pdf");
     }
 }
