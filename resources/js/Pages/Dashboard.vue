@@ -87,7 +87,7 @@ const apps = ref([
   },
   {
     name: 'Laporan',
-    route: '',
+    route: 'reports.index',
     color: 'bg-purple-600',
     cashier: true,
     icon: `

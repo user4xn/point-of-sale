@@ -40,4 +40,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductUnitConversion::class);
     }
+
+    public function transactionItems()
+    {
+        return $this->hasMany(TransactionItem::class, 'product_id');
+    }
 }

@@ -12,6 +12,11 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseReturnController;
+use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\ProductReportController;
+use App\Http\Controllers\CashReportController;
+use App\Http\Controllers\PurchaseReportController;
+use App\Http\Controllers\StockOpnameReportController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +70,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('purchase-returns/{purchaseReturn}/confirm', [PurchaseReturnController::class, 'confirm'])->name('purchase-returns.confirm');
     Route::post('purchase-returns/{purchaseReturn}/void', [PurchaseReturnController::class, 'void'])->name('purchase-returns.void');
     Route::get('purchase-returns/{purchaseReturn}/print', [PurchaseReturnController::class, 'print'])->name('purchase-returns.print');
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', function(){
+            return Inertia::render('Reports/Index');
+        })->name('index');
+
+        Route::get('/sales', [SalesReportController::class, 'index'])->name('sales.index');
+        Route::get('/sales/export', [SalesReportController::class, 'export'])->name('sales.export');
+
+        Route::get('/products', [ProductReportController::class, 'index'])->name('products.index');
+        Route::get('/products/export', [ProductReportController::class, 'export'])->name('products.export');
+
+        Route::get('/cash', [CashReportController::class, 'index'])->name('cash.index');
+        Route::get('/cash/export', [CashReportController::class, 'export'])->name('cash.export');
+
+        Route::get('/purchase', [PurchaseReportController::class, 'index'])->name('purchase.index');
+        Route::get('/purchase/{id}/detail', [PurchaseReportController::class, 'detail'])->name('purchase.detail');
+        Route::get('/purchase/export', [PurchaseReportController::class, 'export'])->name('purchase.export');
+
+        Route::get('/stockopname', [StockOpnameReportController::class, 'index'])->name('stockopname.index');
+        Route::get('/stockopname/export', [StockOpnameReportController::class, 'export'])->name('stockopname.export');
+    });
 });
 
 Route::middleware(['auth', 'verified', 'can:admin-only'])->group(function () {
