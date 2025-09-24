@@ -101,7 +101,7 @@ const submit = () => {
                     class="dark-select pr-1"
                     :options="filteredProducts.map(s => ({ value: s.id, label: s.name }))"
                     placeholder="Pilih / Ketik Supplier"
-                    @change="item.unit_conversion_id = null"
+                    @option-selected="item.unit_conversion_id = null"
                   />
                 </td>
 

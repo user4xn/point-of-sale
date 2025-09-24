@@ -142,32 +142,6 @@ const apps = ref([
       <h2 class="text-xl font-semibold leading-tight text-gray-200">Dashboard Aplikasi</h2>
     </template>
 
-    <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-white/10">
-      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
-        <h3 class="text-sm font-medium relative">Total Transaksi Hari Ini</h3>
-        <p class="text-2xl font-bold mt-2 relative">{{ dashboard.total_transactions }}</p>
-      </div>
-
-      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-percent-icon lucide-percent"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-        <h3 class="text-sm font-medium relative">Total Penjualan Hari Ini</h3>
-        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.total_sales).toLocaleString() }}</p>
-      </div>
-
-      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-piggy-bank-icon lucide-piggy-bank"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg>
-        <h3 class="text-sm font-medium relative">Kas Awal</h3>
-        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.opening_amount).toLocaleString() }}</p>
-      </div>
-
-      <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-        <svg :class="styleIconMetrics" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign-icon lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <h3 class="text-sm font-medium relative">Kas Saat Ini</h3>
-        <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_cash).toLocaleString() }}</p>
-      </div>
-    </div>
-
     <div class="py-6">
       <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -181,6 +155,71 @@ const apps = ref([
             <div v-html="app.icon"></div>
             <span class="mt-3 font-semibold">{{ app.name }}</span>
           </Link>
+        </div>
+      </div>
+
+      <!-- Metrics Section -->
+      <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-white/10 mt-6">
+
+        <!-- Total Transaksi Hari Ini -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Total Transaksi Hari Ini</h3>
+          <p class="text-2xl font-bold mt-2 relative">{{ dashboard.total_transactions }}</p>
+        </div>
+
+        <!-- Gross Sales -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Gross Sales</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.gross_sales).toLocaleString() }}</p>
+        </div>
+
+        <!-- Net Sales -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Net Sales</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.net_sales).toLocaleString() }}</p>
+        </div>
+
+        <!-- Average Transaction -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Rata-rata Transaksi</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.avg_transaction).toLocaleString() }}</p>
+        </div>
+      </div>
+
+       <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-white/10 mt-6">
+        <!-- Kas Awal -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Kas Awal</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.opening_amount).toLocaleString() }}</p>
+        </div>
+
+        <!-- Kas Saat Ini -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Kas Saat Ini</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_cash).toLocaleString() }}</p>
+        </div>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Stock Alerts -->
+        <div class="bg-red-800/50 p-4 shadow text-white border-b-4 border-red-500 overflow-hidden">
+          <h3 class="text-sm font-medium">Stok Hampir Habis (!!!)</h3>
+          <ul class="mt-2 text-sm space-y-1">
+            <li v-for="(s, i) in dashboard.stock_alerts" :key="i" class="flex justify-between">
+              <span>{{ s.name }}</span>
+              <span class="font-bold text-red-400">{{ s.stock }}</span>
+            </li>
+          </ul>
+        </div>
+        <!-- Top Produk -->
+        <div class="bg-blue-800/50 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium">Top Produk (5 Besar)</h3>
+          <ul class="mt-2 text-sm space-y-1">
+            <li v-for="(p, i) in dashboard.top_products" :key="i" class="flex justify-between">
+              <span>{{ i+1 }}. {{ p.name }}</span>
+              <span class="font-bold">{{ p.qty }}x</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

@@ -36,6 +36,21 @@ const addItem = () => {
   })
 }
 
+const getProduct = (id: number) => {
+  return filteredProducts.value.find(p => p.id === id) || null
+}
+
+const onProductChange = (i: number) => {  
+  const prod = getProduct(form.items[i].product_id)
+
+  console.log(prod)
+  if (prod) {
+    form.items[i].price = prod.purchase_price   // auto isi harga beli
+    form.items[i].quantity = 1                  // reset qty
+    form.items[i].subtotal = prod.purchase_price
+  }
+}
+
 const removeItem = (i: number) => {
   form.items.splice(i, 1)
 }
@@ -114,7 +129,7 @@ const submit = () => {
                     class="dark-select pr-1"
                     :options="filteredProducts.map(s => ({ value: s.id, label: s.name }))"
                     placeholder="Pilih Produk"
-                    @change="item.unit_conversion_id = null"
+                    @option-selected="onProductChange(i)"
                   />
                 </td>
 
@@ -142,6 +157,7 @@ const submit = () => {
                     v-model.number="item.quantity"
                     type="number"
                     min="1"
+                    :max="getProduct(item.product_id)?.stock || null"
                     class="w-full py-1.5 rounded bg-gray-700 border border-gray-600 text-white"
                     @input="updateSubtotal(i)"
                   />
