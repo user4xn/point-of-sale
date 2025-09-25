@@ -2,10 +2,27 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
-import { inject } from 'vue';
+import { inject, ref, watch } from 'vue';
 
-const props = defineProps<{ suppliers: any }>()
+const props = defineProps<{ 
+  suppliers: any, 
+  filters: { 
+    search?: string,
+  } 
+}>()
+
 const $swal = inject('swal') as any
+const search = ref(props.filters.search || '')
+
+watch([search], (value) => {
+  router.get(
+    '/suppliers',
+    { 
+      search: search.value, 
+    },
+    { preserveState: true, replace: true }
+  )
+})
 
 const deleteSupplier = async (id: number) => {
   const result = await $swal.fire({
@@ -48,6 +65,16 @@ const deleteSupplier = async (id: number) => {
           + Tambah Supplier
         </Link>
       </div>
+
+      <div class="filters mb-4 flex gap-2 flex-wrap w-full justify-start flex-stretch">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Cari produk..."
+          class="px-4 py-2 rounded-full bg-gray-700 border border-gray-600 text-white"
+        />
+      </div>
+
 
       <table class="w-full table-auto text-sm text-white">
         <thead>
