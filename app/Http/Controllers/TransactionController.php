@@ -89,9 +89,12 @@ class TransactionController extends Controller
     public function searchProduct(Request $request)
     {
         $query = $request->get('query');
-        $products = \App\Models\Product::query()
-            ->where('sku', $query)
-            ->orWhere('name', 'like', "%{$query}%")
+        $products = Product::query()
+            ->where('status', 'active')
+            ->when($request->query, function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('sku', 'like', "%{$query}%");
+            })
             ->limit(10)
             ->get(['id', 'name', 'sku', 'sell_price', 'stock']);
 
@@ -153,6 +156,10 @@ class TransactionController extends Controller
                 $product = Product::findOrFail($item['product_id']);
                 if ($product->stock < $item['quantity']) {
                     throw new \Exception("Stok produk {$product->name} tidak cukup");
+                }
+
+                if ($product->status !== 'active') {
+                    throw new \Exception("Produk {$product->name} tidak aktif");
                 }
 
                 $product->decrement('stock', $item['quantity']);

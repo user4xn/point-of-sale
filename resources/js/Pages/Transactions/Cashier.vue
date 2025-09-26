@@ -122,10 +122,12 @@ const confirmPayment = () => {
           showAfterPayModal.value = true
         })
       } else {
-        $swal.fire('Error', res.data.message, 'error')
+        showPayModal.value = false
+        $swal.fire('Error', 'Produk tidak valid / di nonaktifkan', 'error')
       }
     })
     .catch((err) => {
+      showPayModal.value = false
       $swal.fire('Error', err.data.message, 'error')
     })
 }
