@@ -10,6 +10,10 @@ use App\Models\Setting;
 use App\Models\TransactionItem;
 use App\Models\CashRegister;
 use App\Models\CashRegisterTransaction;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 
 class TransactionController extends Controller
 {
@@ -221,6 +225,67 @@ class TransactionController extends Controller
             'trx' => $trx,
             'settings' => $settings,
         ]);
+    }
+
+    public function printDirect($id)
+    {
+        $trx = Transaction::with(['items.product.unit', 'user'])->findOrFail($id);
+        $settings = Setting::first();
+
+        // pilih connector sesuai environment
+        // di Windows → pakai nama share printer (misal "POS-80C")
+        $connector = new WindowsPrintConnector("RPP02N");
+        // kalau di Linux → /dev/usb/lp0
+        // $connector = new FilePrintConnector("/dev/usb/lp0");
+
+        $printer = new Printer($connector);
+
+        // header
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->text(strtoupper($settings->store_name) . "\n");
+        $printer->text($settings->store_address . "\n");
+        $printer->text("Telp: " . $settings->store_contact . "\n");
+        $printer->feed();
+
+        // order info
+        $printer->setJustification(Printer::JUSTIFY_LEFT);
+        $printer->text("No: {$trx->invoice_number}\n");
+        $printer->text("Tanggal: {$trx->created_at}\n");
+        $printer->text("Kasir: {$trx->user?->name}\n");
+        $printer->text("--------------------------------\n");
+
+        // items
+        foreach ($trx->items as $item) {
+            $line = sprintf(
+                "%-12s %3s x %6s\n   %s\n",
+                substr($item->product->name, 0, 12),
+                $item->quantity,
+                $item->price,
+                $item->subtotal
+            );
+            $printer->text($line);
+        }
+        $printer->text("--------------------------------\n");
+
+        // summary
+        $printer->text("Subtotal : {$trx->total_price}\n");
+        $printer->text("Diskon   : {$trx->discount}\n");
+        $printer->text("PPN      : {$trx->tax}\n");
+        $printer->text("TOTAL    : {$trx->grand_total}\n");
+        $printer->text("Tunai    : {$trx->paid_amount}\n");
+        $printer->text("Kembali  : {$trx->change_amount}\n");
+        $printer->feed();
+
+        // footer
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->text("*** {$settings->receipt_template} ***\n");
+        $printer->text("Terima Kasih & Sampai Jumpa\n");
+        $printer->feed(4);
+
+        $printer->cut();
+        $printer->close();
+
+        return back()->with('success', 'Struk berhasil dicetak.');
     }
 
     public function today()
