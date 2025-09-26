@@ -3,6 +3,7 @@ import { Head, useForm, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { computed,ref } from 'vue'
 import VueSelect from 'vue3-select-component'
+import BlankImage from '@/Images/assets/blank-image.jpg'
 
 defineOptions({ layout: AuthenticatedLayout })
 
@@ -241,7 +242,7 @@ const submit = () => {
           @click="triggerFilePicker"
         >
           <img
-            :src="imagePreview ?? '/storage/img-assets/blank-image.jpg'"
+            :src="imagePreview ?? BlankImage"
             class="object-cover h-[400px] w-full border-b border-gray-600"
           />
           <span class="py-2 text-gray-400">Klik untuk mengganti gambar</span>

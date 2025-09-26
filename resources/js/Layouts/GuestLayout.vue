@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link } from '@inertiajs/vue3';
+import bg from '@/Images/assets/patterns.png';
 </script>
 
 <template>
     <div
         class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900"
-        style="background-image: url('/storage/img-assets/patterns.png'); background-size: cover; background-repeat: repeat;"
+        style="background-size: cover; background-repeat: repeat;":style="{ backgroundImage: `url(${bg})` }"
     >
           <!-- Overlay gelap biar pattern ga ganggu -->
           <div class="absolute inset-0 bg-gray-900/70"></div>
