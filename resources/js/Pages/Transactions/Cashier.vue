@@ -107,28 +107,30 @@ const confirmPayment = () => {
 
   axios.post(route('transaction.store'), form.value)
     .then((res) => {
-      if (res.data.success) {
-        lastTrxId.value = res.data.trx_id
-        showPayModal.value = false
-        cart.value = []
-        form.value = { customer_name: '', items: [], paid_amount: 0 }
+      lastTrxId.value = res.data.trx_id
+      showPayModal.value = false
+      cart.value = []
+      form.value = { customer_name: '', items: [], paid_amount: 0 }
 
-        $swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: 'Transaksi berhasil disimpan!',
-          confirmButtonText: 'Lanjut',
-        }).then(() => {
-          showAfterPayModal.value = true
-        })
-      } else {
-        showPayModal.value = false
-        $swal.fire('Error', 'Produk tidak valid / di nonaktifkan', 'error')
-      }
+      $swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: res.data.message,
+        confirmButtonText: 'Lanjut',
+      }).then(() => {
+        showAfterPayModal.value = true
+      })
     })
     .catch((err) => {
       showPayModal.value = false
-      $swal.fire('Error', err.data.message, 'error')
+
+      if (err.response?.status === 422) {
+        $swal.fire('Error', err.response.data.message, 'error')
+      } else if (err.response?.status === 500) {
+        $swal.fire('Error', 'Terjadi kesalahan server. ' + err.response.data.message, 'error')
+      } else {
+        $swal.fire('Error', 'Terjadi kesalahan yang tidak diketahui', 'error')
+      }
     })
 }
 

@@ -118,6 +118,7 @@ class TransactionController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
             $cashRegister = CashRegister::whereNull('closed_at')
                 ->whereDate('opened_at', now()->toDateString())
@@ -125,7 +126,10 @@ class TransactionController extends Controller
                 ->first();
 
             if (!$cashRegister) {
-                return back()->with('error', 'Kas belum dibuka hari ini');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kas belum dibuka hari ini',
+                ], 422);
             }
 
             $settings = Setting::first();
@@ -139,41 +143,51 @@ class TransactionController extends Controller
             $change = $request->paid_amount - $grandTotal;
 
             if ($request->paid_amount < $grandTotal) {
-                throw new \Exception("Uang customer tidak mencukupi");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Uang customer tidak mencukupi',
+                ], 422);
             }
 
             $trx = Transaction::create([
-                'invoice_number' => 'INV-' . now()->format('Ymd-His'),
-                'user_id' => auth()->id(),
+                'invoice_number'   => 'INV-' . now()->format('Ymd-His'),
+                'user_id'          => auth()->id(),
                 'cash_register_id' => $cashRegister->id,
-                'customer_name' => $request->customer_name,
-                'total_price' => $total,
-                'discount' => $discount,
-                'tax' => $tax,
-                'grand_total' => $grandTotal,
-                'paid_amount' => $request->paid_amount,
-                'change_amount' => $change,
-                'status' => $grandTotal <= $request->paid_amount ? 'paid' : 'unpaid',
+                'customer_name'    => $request->customer_name,
+                'total_price'      => $total,
+                'discount'         => $discount,
+                'tax'              => $tax,
+                'grand_total'      => $grandTotal,
+                'paid_amount'      => $request->paid_amount,
+                'change_amount'    => $change,
+                'status'           => 'paid',
             ]);
 
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
+
                 if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Stok produk {$product->name} tidak cukup");
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stok produk {$product->name} tidak cukup",
+                    ], 422);
                 }
 
                 if ($product->status !== 'active') {
-                    throw new \Exception("Produk {$product->name} tidak aktif");
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Produk {$product->name} tidak aktif",
+                    ], 422);
                 }
 
                 $product->decrement('stock', $item['quantity']);
 
                 TransactionItem::create([
                     'transaction_id' => $trx->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity'],
+                    'product_id'     => $item['product_id'],
+                    'quantity'       => $item['quantity'],
+                    'price'          => $item['price'],
+                    'subtotal'       => $item['price'] * $item['quantity'],
                 ]);
             }
 
@@ -182,22 +196,24 @@ class TransactionController extends Controller
 
             CashRegisterTransaction::create([
                 'cash_register_id' => $cashRegister->id,
-                'transaction_id' => $trx->id,
+                'transaction_id'   => $trx->id,
             ]);
 
             DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil disimpan',
-                'trx_id' => $trx->id,
-            ]);
+                'trx_id'  => $trx->id,
+            ], 201);
 
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
-            ]);
+                'message' => 'Terjadi kesalahan server: ' . $e->getMessage(),
+            ], 500);
         }
     }
 

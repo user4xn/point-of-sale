@@ -48,7 +48,14 @@ watch(search, (val) => {
 
 const handlePrint = (id: number) => {
   if (!id) return
-  (window as any).open(route('transaction.print', id), '_blank')
+  router.post(route('transaction.print.direct', id), {}, {
+    onSuccess: () => {
+      console.log("Struk berhasil dicetak langsung ke printer")
+    },
+    onError: () => {
+      console.error("Gagal mencetak")
+    }
+  })
 }
 
 const showDetail = ref(false)

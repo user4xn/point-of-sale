@@ -136,10 +136,9 @@ const renderTemplate = () => {
           Simpan
         </button>
       </form>
-  
-      <!-- Receipt Preview -->
+      
+      <!-- Receipt V1 Preview 
       <div class="bg-white text-black border border-gray-400 rounded p-4 text-sm font-mono w-[280]">
-        <!-- Header -->
         <div class="text-center mb-3">
           <img
             v-if="props.setting?.store_logo"
@@ -154,7 +153,7 @@ const renderTemplate = () => {
 
         <hr class="border-t border-dashed border-gray-400 my-1" />
 
-        <!-- Order Info -->
+        
         <div class="mb-2">
           <div>No. Order : <strong>INV-20250915-001123</strong></div>
           <div>Tanggal   : {{ new Date().toLocaleString() }}</div>
@@ -163,7 +162,7 @@ const renderTemplate = () => {
 
         <hr class="border-t border-dashed border-gray-400 my-1" />
 
-        <!-- Order Items -->
+        
         <table class="w-full text-xs">
           <tbody>
             <template v-for="item in [
@@ -188,7 +187,7 @@ const renderTemplate = () => {
 
         <hr class="border-t border-dashed border-gray-400 my-1" />
 
-        <!-- Summary -->
+        
         <div class="text-sm">
           <div class="flex justify-between">
             <span>Subtotal</span>
@@ -218,9 +217,95 @@ const renderTemplate = () => {
 
         <hr class="border-t border-dashed border-gray-400 my-1" />
 
-        <!-- Footer -->
+        
         <div class="text-center text-xs mt-2">
           <p>*** {{ renderTemplate() }} ***</p>
+          <p>Terima Kasih & Sampai Jumpa</p>
+        </div>
+      </div>
+      Receipt V1 Preview -->
+
+      <!-- Receipt Preview -->
+      <div class="bg-white text-black border border-gray-400 rounded p-3 w-[280px] font-mono text-[12px] leading-tight">
+        <div class="text-center mb-2">
+          <img
+            v-if="props.setting?.store_logo"
+            :src="`/storage/${props.setting.store_logo}`"
+            alt="Logo"
+            class="mx-auto h-12 mb-1"
+          />
+          <strong class="block uppercase text-[14px]">{{ form.store_name || 'NAMA TOKO' }}</strong>
+          <span class="block">{{ form.store_address || 'Alamat Toko' }}</span>
+          <span class="block">{{ form.store_contact || 'Kontak' }}</span>
+        </div>
+
+        <hr class="border-t border-dashed border-gray-500 my-1" />
+
+        <div class="mb-1">
+          <div>No. Order : <strong>INV-20250915-001123</strong></div>
+          <div>Tanggal   : {{ new Date().toLocaleString() }}</div>
+          <div>Kasir     : superadmin</div>
+        </div>
+
+        <hr class="border-t border-dashed border-gray-500 my-1" />
+
+        <table class="w-full text-[12px]">
+          <tbody>
+            <template v-for="item in [
+                { name: 'Indomie Goreng', qty: 2, price: 3500, unit: 'pcs' },
+                { name: 'Aqua Botol', qty: 1, price: 5000, unit: 'pcs' },
+                { name: 'Teh Kotak', qty: 3, price: 4500, unit: 'pcs' }
+              ]" :key="item.name">
+              <tr>
+                <td colspan="2">{{ item.name }}</td>
+                <td class="text-right">{{ item.qty }}</td>
+                <td class="text-right uppercase">{{ item.unit }}</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td class="text-right pr-3">{{ item.price.toLocaleString('id-ID') }}</td>
+                <td class="text-right">{{ (item.qty * item.price).toLocaleString('id-ID') }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <hr class="border-t border-dashed border-gray-500 my-1" />
+
+        <div class="space-y-[2px]">
+          <div class="flex justify-between">
+            <span>Subtotal</span>
+            <span>{{ rupiah(26500) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Diskon</span>
+            <span>{{ rupiah(1500) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>PPN ({{ form.tax_rate || 0 }}%)</span>
+            <span>{{ rupiah((26500 - 1500) * (form.tax_rate/100)) }}</span>
+          </div>
+          <div class="flex justify-between font-bold">
+            <span>Total</span>
+            <span>{{ rupiah(25000 + (26500 - 1500) * (form.tax_rate/100)) }}</span>
+          </div>
+          <div class="flex justify-between mt-1">
+            <span>Tunai</span>
+            <span>{{ rupiah(30000) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Kembali</span>
+            <span>{{ rupiah(5000) }}</span>
+          </div>
+        </div>
+
+        <hr class="border-t border-dashed border-gray-500 my-1" />
+
+        <div class="text-center text-xs mt-1">
+          <p>
+            *** {{ renderTemplate() || 'Terima kasih telah berbelanja di [store_name]' }} ***
+          </p>
           <p>Terima Kasih & Sampai Jumpa</p>
         </div>
       </div>
