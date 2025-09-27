@@ -119,12 +119,6 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     { 
-        Log::info('Request data:', [
-          'all' => $request->all(),
-          'files' => $request->files->all(),
-          'method' => $request->method(),
-          '_method' => $request->input('_method'),
-          ]);
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
@@ -161,13 +155,28 @@ class ProductController extends Controller
             }
 
             if ($request->unit_conversions) {
-                $product->unitConversions()->delete();
+                $existingIds = $product->unitConversions()->pluck('id')->toArray();
+                $requestIds  = collect($request->unit_conversions)->pluck('id')->filter()->toArray();
+
+                $toDelete = array_diff($existingIds, $requestIds);
+                if (!empty($toDelete)) {
+                    $product->unitConversions()->whereIn('id', $toDelete)->delete();
+                }
+
                 foreach ($request->unit_conversions as $uc) {
-                    if (!empty($uc['unit_name']) && !empty($uc['conversion'])) {
-                        $product->unitConversions()->create([
-                            'unit_name' => $uc['unit_name'],
-                            'conversion' => $uc['conversion'],
+                    if (!empty($uc['id'])) {
+                        $product->unitConversions()->where('id', $uc['id'])->update([
+                            'unit_name'      => $uc['unit_name'],
+                            'conversion'     => $uc['conversion'],
                             'purchase_price' => $uc['purchase_price'] ?? null,
+                            'sell_price'     => $uc['sell_price'] ?? null,
+                        ]);
+                    } else {
+                        $product->unitConversions()->create([
+                            'unit_name'      => $uc['unit_name'],
+                            'conversion'     => $uc['conversion'],
+                            'purchase_price' => $uc['purchase_price'] ?? null,
+                            'sell_price'     => $uc['sell_price'] ?? null,
                         ]);
                     }
                 }

@@ -23,4 +23,9 @@ class Transaction extends Model
     public function items() {
         return $this->hasMany(TransactionItem::class);
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

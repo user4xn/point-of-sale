@@ -120,6 +120,7 @@ const submit = () => {
               <th class="p-2 text-start">Nama Unit</th>
               <th class="p-2 text-start">Konversi</th>
               <th class="p-2 text-start">Harga Beli (opsional)</th>
+              <th class="p-2 text-start">Harga Jual (wajib)</th>
               <th class="p-2"></th>
             </tr>
           </thead>
@@ -133,6 +134,9 @@ const submit = () => {
               </td>
               <td class="p-2">
                 <input v-model.number="uc.purchase_price" type="number" class="w-full border bg-gray-700 rounded p-2"/>
+              </td>
+              <td class="p-2">
+                <input v-model.number="uc.sell_price" type="number" class="w-full border bg-gray-700 rounded p-2"/>
               </td>
               <td class="p-2">
                 <button @click="removeUnitConversion(i)" type="button" class="px-2 py-1 bg-red-600 rounded text-white">Hapus</button>

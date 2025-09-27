@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import Modal from '@/Components/Modal.vue'
@@ -32,8 +32,19 @@ const showTodayTrxModal = ref(false)
 const todayTrx = ref<any[]>([])
 const showAfterPayModal = ref(false)
 const lastTrxId = ref<number | null>(null)
+const customer = ref<{ id: number|null, name: string }>({ id: null, name: '' })
+const showCustomerModal = ref(false)
+const customerForm = ref({ name: '', phone: '', email: '', address: '' })
+const inputCustomerNo = ref<string>('')
+const customerPoints = ref(0)
+const customerNameRef = ref<HTMLInputElement|null>(null)
+
+watch(showCustomerModal, (open) => {
+  if (open) nextTick(() => customerNameRef.value?.focus())
+})
 
 const form = ref({
+  customer_id: null as number | null,
   customer_name: '',
   items: [] as { product_id: number; quantity: number; price: number }[],
   paid_amount: 0,
@@ -74,8 +85,12 @@ watch(
   cart,
   (items) => {
     items.forEach((i) => {
-      if (i.quantity < 1) i.quantity = 1
-      if (i.quantity > i.stock) i.quantity = i.stock
+      if (i.quantity < 1) i.quantity = 0
+
+      const conversion = i.conversion ?? 1
+      const maxQty = Math.floor(i.stock / conversion)
+
+      if (i.quantity > maxQty) i.quantity = maxQty
     })
   },
   { deep: true }
@@ -97,11 +112,17 @@ const openPayModal = () => {
 }
 
 const confirmPayment = () => {
+  if (cashInputRaw.value < grandTotal.value) {
+    return
+  } 
+
   form.value.items = cart.value.map((i) => ({
     product_id: i.product_id,
     quantity: i.quantity,
     price: i.price,
+    unit_conversion_id: i.unit_conversion_id,
   }))
+
   form.value.paid_amount = cashInputRaw.value
   change.value = cashInputRaw.value - grandTotal.value
 
@@ -109,14 +130,23 @@ const confirmPayment = () => {
     .then((res) => {
       lastTrxId.value = res.data.trx_id
       showPayModal.value = false
-      cart.value = []
-      form.value = { customer_name: '', items: [], paid_amount: 0 }
+      resetState()
 
+      let timerInterval: any;
       $swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: res.data.message,
-        confirmButtonText: 'Lanjut',
+        icon: 'info',
+        title: 'Memproses Transaksi',
+        timer: 1200,
+        didOpen: () => {
+          $swal.showLoading();
+          const timer = $swal.getPopup().querySelector("b");
+          timerInterval = setInterval(() => {
+            timer.textContent = `${$swal.getTimerLeft()}`;
+          }, 100);
+        },
+        willClose: () => {
+          clearInterval(timerInterval);
+        }
       }).then(() => {
         showAfterPayModal.value = true
       })
@@ -136,7 +166,7 @@ const confirmPayment = () => {
 
 const handlePrint = (id: number | null) => {
   if (!id) return
-  (window as any).open(route('transaction.print', id), '_blank')
+  router.post(route('transaction.print.direct', id), {}, {})
 }
 
 const handleSearch = async () => {
@@ -176,11 +206,126 @@ const addToCart = (product: any) => {
       sku: product.sku,
       name: product.name,
       price: product.sell_price,
+      default_price: product.sell_price,
+      unit_conversion_id: null,
+      default_unit_name: product.unit?.name ?? 'Pcs',
+      unit_name: product.unit?.name ?? 'Pcs',
+      unit_conversions: product.unit_conversions || [],
+      conversion: 1,
       quantity: 1,
       stock: product.stock,
     })
   }
 }
+
+const onPhoneInput = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  let val = target.value
+
+  // hanya angka
+  val = val.replace(/\D/g, '')
+
+  // max 15 digit
+  if (val.length > 15) {
+    val = val.slice(0, 15)
+  }
+
+  inputCustomerNo.value = val
+}
+
+const onCreateCustomerPhoneInput = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  let val = target.value
+
+  // hanya angka
+  val = val.replace(/\D/g, '')
+
+  // max 15 digit
+  if (val.length > 15) {
+    val = val.slice(0, 15)
+  }
+
+  customerForm.value.phone = val
+}
+
+const applyCustomerByPhone = async () => {
+  if (!inputCustomerNo.value) return
+
+  // Validasi dasar
+  const phone = inputCustomerNo.value.toString().trim()
+
+  // Hanya angka
+  if (!/^[0-9]+$/.test(phone)) {
+    $swal.fire('Error', 'Nomor HP hanya boleh angka', 'error')
+    return
+  }
+
+  // Minimal 10 digit & maksimal 15 digit (standar Indonesia)
+  if (phone.length < 10 || phone.length > 15) {
+    $swal.fire('Error', 'Nomor HP harus 10–15 digit', 'error')
+    return
+  }
+  
+  try {
+    const res = await axios.get(route('customer.find'), {
+      params: { phone: inputCustomerNo.value }
+    })
+    customer.value = { id: res.data.id, name: res.data.name }
+    form.value.customer_id = res.data.id
+    form.value.customer_name = res.data.name
+
+    
+    customerPoints.value = res.data.points
+    searchError.value = false
+  } catch (e: any) {
+    customer.value = { id: null, name: '' }
+    form.value.customer_id = null
+    customerPoints.value = 0
+    $swal.fire('Error', 'Customer tidak ditemukan', 'error')
+  }
+}
+
+const saveCustomer = async () => {
+  try {
+    const res = await axios.post(route('customer.store'), customerForm.value)
+    customer.value = { id: res.data.id, name: res.data.name }
+    form.value.customer_id = res.data.id
+    showCustomerModal.value = false
+    customerForm.value = { name: '', phone: '', email: '', address: '' }
+    $swal.fire('Success', 'Customer berhasil disimpan', 'success')
+  } catch (e) {
+    console.error(e)
+    $swal.fire('Error', 'Gagal simpan customer', 'error')
+  }
+}
+
+const resetState = () => {
+  inputCustomerNo.value = ''
+  customer.value = { id: null, name: '' }
+  form.value.customer_id = null
+  customerPoints.value = 0
+  cart.value = []
+}
+
+
+const updatePrice = (i: number) => {
+  const item = cart.value[i]
+  if (item.unit_conversion_id) {
+    const uc = item.unit_conversions?.find(u => u.id === item.unit_conversion_id)
+    if (uc) {
+      item.price = uc.sell_price
+      item.conversion = uc.conversion
+      item.unit_name = uc.unit_name
+    }
+  } else {
+    item.price = item.default_price ?? 0
+    item.conversion = 1
+    // fallback ke default unit
+    item.unit_name = item.unit_name || 'Pcs'
+  }
+}
+
+
 </script>
 
 <template>
@@ -252,6 +397,7 @@ const addToCart = (product: any) => {
                 <th class="p-2">Kode Item</th>
                 <th class="p-2">Nama</th>
                 <th class="p-2">Harga</th>
+                <th class="p-2">Satuan</th>
                 <th class="p-2">Qty</th>
                 <th class="p-2">Total</th>
               </tr>
@@ -266,6 +412,15 @@ const addToCart = (product: any) => {
                 <td class="p-2">{{ item.sku }}</td>
                 <td class="p-2">{{ item.name }}</td>
                 <td class="p-2">Rp{{ item.price.toLocaleString() }}</td>
+                <td class="p-2">
+                  <select v-model="item.unit_conversion_id" @change="updatePrice(i)"
+                    class="bg-gray-700 rounded text-white p-1 w-full py-2">
+                    <option :value="null">{{ item.default_unit_name }}</option>
+                    <option v-for="uc in item.unit_conversions" :key="uc.id" :value="uc.id">
+                      {{ uc.unit_name }}
+                    </option>
+                  </select>
+                </td>
                 <td class="p-2">
                   <input
                     v-model="item.quantity"
@@ -296,6 +451,13 @@ const addToCart = (product: any) => {
             </div>
             <div class="mt-4 flex flex-col gap-1">
               <div class="flex gap-2 justify-between">
+                <span>Nama Customer</span>
+                <span class="font-bold">
+                  {{ customer.id ? customer.name : '-' }}
+                  <span v-if="customer.id"> ({{ customerPoints }} poin)</span>
+                </span>
+              </div>
+              <div class="flex gap-2 justify-between">
                 <span>Sub Total</span>
                 <span class="font-bold">Rp{{ subtotal.toLocaleString() }}</span>
               </div>
@@ -310,6 +472,15 @@ const addToCart = (product: any) => {
             </div>
           </div>
           <div class="mb-4">
+            <input
+              v-model="inputCustomerNo"
+              @input="onPhoneInput"
+              @keyup.enter="applyCustomerByPhone"
+              type="text"
+              class="w-full p-3 bg-transparent text-yellow-300 font-bold text-[40px] text-center 
+                    focus:outline-none focus:ring-0 border-0 border-b-2"
+              placeholder="Input No Member"
+            />
             <button
               type="button"
               @click="openPayModal"
@@ -320,7 +491,7 @@ const addToCart = (product: any) => {
             </button>
             <button
               type="button"
-              @click="cart = []"
+              @click="resetState()"
               class="p-4 mt-4 bg-red-500 rounded-xl w-full text-2xl font-bold"
             >
               Reset
@@ -331,23 +502,27 @@ const addToCart = (product: any) => {
     </div>
 
     <!-- FOOTER -->
-    <div class="footer flex p-2 h-28 gap-2">
-      <Link :href="route('dashboard')" class="p-4 flex gap-2 w-[200px] items-center font-semibold bg-gray-600 hover:bg-blue:700 rounded transition ease-in-out">
+    <div class="footer flex p-2 h-28 gap-2 justify-center">
+      <Link :href="route('dashboard')" class="p-4 flex gap-2 w-[300px] justify-center items-center font-semibold bg-gray-600 hover:bg-gray-700 cursor-pointer rounded transition ease-in-out">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-arrow-out-down-left-icon lucide-circle-arrow-out-down-left"><path d="M2 12a10 10 0 1 1 10 10"/><path d="m2 22 10-10"/><path d="M8 22H2v-6"/></svg>
         Keluar Mode Kasir
       </Link>
-      <div @click="openTodayTrxModal" class="p-4 flex flex gap-2 w-[200px] justify-center items-center font-semibold bg-gray-600 hover:bg-blue:700 rounded transition ease-in-out">
+      <div @click="openTodayTrxModal" class="p-4 flex flex gap-2 w-[300px] justify-center items-center font-semibold bg-gray-600 hover:bg-gray-700 cursor-pointer rounded transition ease-in-out">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-printer-icon lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
         Cetak Struk
       </div>
-      <Link :href="route('transaction.index')" class="p-4 flex flex gap-2 w-[200px] justify-center items-center font-semibold bg-gray-600 hover:bg-blue:700 rounded transition ease-in-out">
+      <div @click="showCustomerModal = true" class="p-4 flex flex gap-2 w-[300px] justify-center items-center font-semibold bg-gray-600 hover:bg-gray-700 cursor-pointer rounded transition ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-user-icon lucide-book-user"><path d="M15 13a3 3 0 1 0-6 0"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><circle cx="12" cy="8" r="2"/></svg>
+        Tambah Customer
+      </div>
+      <Link :href="route('transaction.index')" class="p-4 flex flex gap-2 w-[300px] justify-center items-center font-semibold bg-gray-600 hover:bg-gray-700 cursor-pointer rounded transition ease-in-out">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-badge-dollar-sign-icon lucide-badge-dollar-sign"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
         Cek Transaksi
       </Link>
     </div>
 
     <!-- MODAL BAYAR -->
-    <Modal :show="showPayModal" maxWidth="md" @close="showPayModal = false" position="top">
+    <Modal :show="showPayModal" maxWidth="md" @close="showPayModal = false">
       <div class="p-6 text-white text-center">
         <h2 class="text-xl font-bold mb-4">Input Uang Cash</h2>
         <div class="border-b-4 border-gray-900">
@@ -355,6 +530,7 @@ const addToCart = (product: any) => {
             ref="cashInputRef"
             v-model="formattedCashInput"
             type="text"
+            @keyup.enter="confirmPayment"
             inputmode="numeric"
             class="w-full p-3 bg-transparent text-yellow-300 font-bold text-[40px] text-center 
                   focus:outline-none focus:ring-0 border-0"
@@ -453,6 +629,37 @@ const addToCart = (product: any) => {
             </tr>
           </tbody>
         </table>
+      </div>
+    </Modal>
+
+    <Modal :show="showCustomerModal" maxWidth="md" @close="showCustomerModal = false">
+      <div class="p-6 text-white">
+        <h2 class="text-xl font-bold mb-4">Tambah Customer</h2>
+
+        <div class="flex flex-col gap-3">
+          <input ref="customerNameRef" v-model="customerForm.name" type="text" placeholder="Nama"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+
+          <input v-model="customerForm.phone" @input="onCreateCustomerPhoneInput" type="text" placeholder="No HP"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+
+          <input v-model="customerForm.email" type="email" placeholder="Email"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+
+          <textarea v-model="customerForm.address" placeholder="Alamat"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white"></textarea>
+        </div>
+
+        <div class="flex justify-between gap-4 mt-6">
+          <button class="flex-1 py-3 bg-gray-600 rounded-xl text-lg font-bold"
+            @click="showCustomerModal = false">
+            Batal
+          </button>
+          <button class="flex-1 py-3 bg-green-600 rounded-xl text-lg font-bold"
+            @click="saveCustomer">
+            Simpan
+          </button>
+        </div>
       </div>
     </Modal>
   </div>

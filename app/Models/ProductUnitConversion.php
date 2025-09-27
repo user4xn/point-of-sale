@@ -11,6 +11,7 @@ class ProductUnitConversion extends Model
         'unit_name',
         'conversion',
         'purchase_price',
+        'sell_price',
     ];
 
     public function product()

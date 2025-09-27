@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\TransactionItem;
 use App\Models\CashRegister;
+use App\Models\Customer;
+use App\Models\ProductUnitConversion;
 use App\Models\CashRegisterTransaction;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
@@ -93,14 +95,23 @@ class TransactionController extends Controller
     public function searchProduct(Request $request)
     {
         $query = $request->get('query');
-        $products = Product::query()
+
+        $products = Product::with('unitConversions')
             ->where('status', 'active')
-            ->when($request->query, function($q) use ($query) {
+            ->when($query, function($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('sku', 'like', "%{$query}%");
             })
+            ->with('unit:id,name')
             ->limit(10)
-            ->get(['id', 'name', 'sku', 'sell_price', 'stock']);
+            ->get([
+                'id',
+                'unit_id',
+                'name',
+                'sku',
+                'sell_price',
+                'stock',
+            ]);
 
         return response()->json($products);
     }
@@ -113,8 +124,10 @@ class TransactionController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
+            'items.*.unit_conversion_id' => 'nullable|exists:product_unit_conversions,id',
             'discount' => 'nullable|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
+            'customer_id' => 'nullable|exists:customers,id',
         ]);
 
         DB::beginTransaction();
@@ -150,6 +163,7 @@ class TransactionController extends Controller
             }
 
             $trx = Transaction::create([
+                'customer_id'     => $request->customer_id,
                 'invoice_number'   => 'INV-' . now()->format('Ymd-His'),
                 'user_id'          => auth()->id(),
                 'cash_register_id' => $cashRegister->id,
@@ -164,14 +178,7 @@ class TransactionController extends Controller
             ]);
 
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['product_id']);
-
-                if ($product->stock < $item['quantity']) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Stok produk {$product->name} tidak cukup",
-                    ], 422);
-                }
+                $product = Product::with('unit')->findOrFail($item['product_id']);
 
                 if ($product->status !== 'active') {
                     return response()->json([
@@ -180,15 +187,47 @@ class TransactionController extends Controller
                     ], 422);
                 }
 
-                $product->decrement('stock', $item['quantity']);
+                $conversionQty = 1;
+                $price = $product->sell_price; // default harga jual product
+                $uc = null;
+
+                if (!empty($item['unit_conversion_id'])) {
+                    $uc = ProductUnitConversion::find($item['unit_conversion_id']);
+                    if ($uc) {
+                        $conversionQty = $uc->conversion;
+                        $price = $uc->sell_price; // pakai harga jual konversi
+                    }
+                }
+
+                $deductStock = $item['quantity'] * $conversionQty;
+
+                if ($product->stock < $deductStock) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stok produk {$product->name} tidak cukup",
+                    ], 422);
+                }
+
+                // Kurangi stok berdasarkan konversi
+                $product->decrement('stock', $deductStock);
 
                 TransactionItem::create([
-                    'transaction_id' => $trx->id,
-                    'product_id'     => $item['product_id'],
-                    'quantity'       => $item['quantity'],
-                    'price'          => $item['price'],
-                    'subtotal'       => $item['price'] * $item['quantity'],
+                    'transaction_id'      => $trx->id,
+                    'product_id'          => $item['product_id'],
+                    'unit_conversion_id'  => $item['unit_conversion_id'] ?? null,
+                    'unit_name'           => $uc?->unit_name ?? $product->unit?->name,
+                    'quantity'            => $item['quantity'],
+                    'price'               => $price,
+                    'subtotal'            => $price * $item['quantity'],
                 ]);
+            }
+
+            if ($request->customer_id) {
+                $customer = Customer::find($request->customer_id);
+                if ($customer) {
+                    $earnedPoints = floor($grandTotal / 1000);
+                    $customer->increment('points', $earnedPoints);
+                }
             }
 
             $cashRegister->increment('total_sales');
@@ -273,9 +312,10 @@ class TransactionController extends Controller
         // items
         foreach ($trx->items as $item) {
             $line = sprintf(
-                "%-12s %3s x %6s\n   %s\n",
+                "%-12s %3s %s x %6s\n   %s\n",
                 substr($item->product->name, 0, 12),
                 $item->quantity,
+                strtoupper($item->unit_name),
                 $item->price,
                 $item->subtotal
             );

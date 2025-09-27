@@ -13,7 +13,18 @@ export interface CartItem {
   sku: string
   name: string
   price: number
+  default_price: number
   quantity: number
+  unit_conversion_id: number | null
+  unit_conversions: {
+    id: number
+    unit_name: string
+    conversion: number
+    sell_price: number
+  }[]
+  unit_name: string
+  default_unit_name: string
+  conversion: number
   stock: number
 }
 

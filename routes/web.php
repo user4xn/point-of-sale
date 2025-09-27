@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductReportController;
 use App\Http\Controllers\CashReportController;
 use App\Http\Controllers\PurchaseReportController;
 use App\Http\Controllers\StockOpnameReportController;
+use App\Http\Controllers\CustomerController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction/print/{transaction}', [TransactionController::class, 'print'])->name('transaction.print');
     Route::post('/transaction/print-pos/{transaction}', [TransactionController::class, 'printDirect'])->name('transaction.print.direct');
 
+    Route::post('/customers', [CustomerController::class, 'store'])->name('customer.store');
+    Route::get('/customers/find', [CustomerController::class, 'findByPhone'])->name('customer.find');
 
     Route::get('/cash-register/check', [CashRegisterController::class, 'check'])->name('cash-register.check');
     Route::post('/cash-register/open', [CashRegisterController::class, 'open'])->name('cash-register.open');

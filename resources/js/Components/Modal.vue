@@ -6,11 +6,13 @@ const props = withDefaults(
     show?: boolean
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
     closeable?: boolean
+    position?: 'top' | 'bottom' | 'middle'
   }>(),
   {
     show: false,
     maxWidth: '2xl',
     closeable: true,
+    position: 'middle',
   }
 )
 
@@ -72,7 +74,7 @@ const maxWidthClass = computed(() => {
     class="z-50 m-0 min-h-full min-w-full overflow-y-auto bg-transparent backdrop:bg-transparent"
     ref="dialog"
   >
-    <div class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0" scroll-region>
+    <div :class="position == 'top' ? 'items-start' : (position == 'bottom' ? 'items-end' : 'items-center')" class="fixed inset-0 z-50 flex justify-center px-4 py-6 sm:px-0" scroll-region>
       <!-- BACKDROP -->
       <Transition
         enter-active-class="ease-out duration-300"
@@ -102,7 +104,7 @@ const maxWidthClass = computed(() => {
       >
         <div
           v-show="show"
-          class="mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full dark:bg-gray-800"
+          class="transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full dark:bg-gray-800"
           :class="maxWidthClass"
         >
           <slot v-if="showSlot" />

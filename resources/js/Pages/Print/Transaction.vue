@@ -45,7 +45,7 @@ onMounted(() => {
           <tr class="py-[2px]">
             <td colspan="2">{{ item.product?.name }}</td>
             <td class="text-right">{{ item.quantity }}</td>
-            <td class="text-right uppercase">{{ item.product?.unit.name }}</td>
+            <td class="text-right uppercase">{{ item.unit_name }}</td>
           </tr>
           <tr>
             <td></td>
