@@ -48,14 +48,7 @@ watch(search, (val) => {
 
 const handlePrint = (id: number) => {
   if (!id) return
-  router.post(route('transaction.print.direct', id), {}, {
-    onSuccess: () => {
-      console.log("Struk berhasil dicetak langsung ke printer")
-    },
-    onError: () => {
-      console.error("Gagal mencetak")
-    }
-  })
+  router.post(route('transaction.print.direct', id), {}, {})
 }
 
 const showDetail = ref(false)
@@ -224,6 +217,7 @@ const fetchTransaction = async (id: number) => {
             <tr class="bg-gray-700">
               <th class="p-2 text-left">Produk</th>
               <th class="p-2 text-right">Qty</th>
+              <th class="p-2 text-right">Satuan</th>
               <th class="p-2 text-right">Harga</th>
               <th class="p-2 text-right">Subtotal</th>
             </tr>
@@ -236,6 +230,7 @@ const fetchTransaction = async (id: number) => {
             >
               <td class="p-2">{{ item.product?.name }}</td>
               <td class="p-2 text-right">{{ item.quantity }}</td>
+              <td class="p-2 text-right uppercase">{{ item.unit_name }}</td>
               <td class="p-2 text-right">Rp {{ Number(item.price).toLocaleString() }}</td>
               <td class="p-2 text-right">Rp {{ Number(item.subtotal).toLocaleString() }}</td>
             </tr>

@@ -85,7 +85,7 @@ watch(
   cart,
   (items) => {
     items.forEach((i) => {
-      if (i.quantity < 1) i.quantity = 0
+      if (i.quantity < 1) i.quantity = 1
 
       const conversion = i.conversion ?? 1
       const maxQty = Math.floor(i.stock / conversion)
@@ -320,8 +320,7 @@ const updatePrice = (i: number) => {
   } else {
     item.price = item.default_price ?? 0
     item.conversion = 1
-    // fallback ke default unit
-    item.unit_name = item.unit_name || 'Pcs'
+    item.unit_name = item.default_unit_name
   }
 }
 

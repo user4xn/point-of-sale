@@ -181,6 +181,7 @@ class TransactionController extends Controller
                 $product = Product::with('unit')->findOrFail($item['product_id']);
 
                 if ($product->status !== 'active') {
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => "Produk {$product->name} tidak aktif",
@@ -202,6 +203,7 @@ class TransactionController extends Controller
                 $deductStock = $item['quantity'] * $conversionQty;
 
                 if ($product->stock < $deductStock) {
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => "Stok produk {$product->name} tidak cukup",
@@ -305,7 +307,7 @@ class TransactionController extends Controller
         // order info
         $printer->setJustification(Printer::JUSTIFY_LEFT);
         $printer->text("No: {$trx->invoice_number}\n");
-        $printer->text("Tanggal: {$trx->created_at}\n");
+        $printer->text("Tanggal: " . $trx->created_at->format('d/m/Y H:i') . "\n");
         $printer->text("Kasir: {$trx->user?->name}\n");
         $printer->text("--------------------------------\n");
 

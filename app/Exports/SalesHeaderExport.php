@@ -5,8 +5,9 @@ namespace App\Exports;
 use App\Models\Transaction;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class SalesHeaderExport implements FromCollection, WithHeadings
+class SalesHeaderExport implements FromCollection, WithHeadings, WithTitle
 {
     protected $from;
     protected $to;
@@ -15,6 +16,11 @@ class SalesHeaderExport implements FromCollection, WithHeadings
     {
         $this->from = $from;
         $this->to   = $to;
+    }
+
+    public function title(): string
+    {
+        return 'Pembelian'; 
     }
 
     public function collection()
@@ -32,6 +38,8 @@ class SalesHeaderExport implements FromCollection, WithHeadings
                     $trx->discount,
                     $trx->tax,
                     $trx->grand_total,
+                    $trx->paid_amount,
+                    $trx->change_amount,
                     $trx->status,
                 ];
             });
@@ -39,6 +47,10 @@ class SalesHeaderExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Invoice', 'Tanggal', 'Kasir', 'Customer', 'Total', 'Diskon', 'Pajak', 'Grand Total', 'Status'];
+        return [
+          'Invoice', 'Tanggal', 'Kasir', 'Customer',
+          'Total', 'Diskon', 'Pajak', 'Grand Total',
+          'Dibayar', 'Kembali', 'Status'
+        ];
     }
 }

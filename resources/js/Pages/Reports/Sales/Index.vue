@@ -94,9 +94,9 @@ watch([from, to, cashier], () => {
 
         <!-- Export Excel -->
         <a
-          :href="route('reports.sales.export', { from, to })"
-          :disabled="!from || !to"
-          class="px-4 py-2 bg-green-600 hover:bg-green-500 font-semibold rounded text-white transition"
+          :href="(!from || !to) ? '#' : route('reports.sales.export', { from, to })"
+          :class="!from || !to ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-500'"
+          class="px-4 py-2 font-semibold rounded text-white transition"
         >
           Export Excel
         </a>

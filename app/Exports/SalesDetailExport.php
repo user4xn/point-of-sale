@@ -5,8 +5,9 @@ namespace App\Exports;
 use App\Models\TransactionItem;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class SalesDetailExport implements FromCollection, WithHeadings
+class SalesDetailExport implements FromCollection, WithHeadings, WithTitle
 {
     protected $from;
     protected $to;
@@ -15,6 +16,11 @@ class SalesDetailExport implements FromCollection, WithHeadings
     {
         $this->from = $from;
         $this->to   = $to;
+    }
+
+    public function title(): string
+    {
+        return 'Detail Pembelian'; 
     }
 
     public function collection()
@@ -29,6 +35,7 @@ class SalesDetailExport implements FromCollection, WithHeadings
                     $item->transaction->invoice_number,
                     $item->product->name ?? '-',
                     $item->quantity,
+                    $item->unit_name,
                     $item->price,
                     $item->subtotal,
                 ];
@@ -37,6 +44,6 @@ class SalesDetailExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Invoice', 'Produk', 'Qty', 'Harga', 'Subtotal'];
+        return ['Invoice', 'Produk', 'Qty', 'Satuan', 'Harga', 'Subtotal'];
     }
 }
