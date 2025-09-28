@@ -130,6 +130,24 @@ const apps = ref([
     icon: `
       <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sliders-horizontal-icon lucide-sliders-horizontal"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg>
     `
+  },
+  {
+    name: 'Data Customer',
+    route: 'customer.index',
+    color: 'bg-purple-800',
+    cashier: false,
+    icon: `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-user-icon lucide-book-user"><path d="M15 13a3 3 0 1 0-6 0"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><circle cx="12" cy="8" r="2"/></svg>
+    `
+  },
+   {
+    name: 'Transaksi Pengeluaran',
+    route: '',
+    color: 'bg-yellow-700',
+    cashier: false,
+    icon: `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blocks-icon lucide-blocks"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>
+    `
   }
 ])
 </script>
@@ -217,7 +235,7 @@ const apps = ref([
           <ul class="mt-2 text-sm space-y-1">
             <li v-for="(p, i) in dashboard.top_products" :key="i" class="flex justify-between">
               <span>{{ i+1 }}. {{ p.name }}</span>
-              <span class="font-bold">{{ p.qty }}x</span>
+              <span class="font-bold">{{ p.qty_sold }}x</span>
             </li>
           </ul>
         </div>

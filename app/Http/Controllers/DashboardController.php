@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -29,13 +30,20 @@ class DashboardController extends Controller
             : 0;
 
         // top produk hari ini
-        $topProducts = TransactionItem::selectRaw('product_id, SUM(quantity) as qty_sold')
-            ->whereIn('transaction_id', $transactionsToday->pluck('id'))
-            ->groupBy('product_id')
-            ->orderByDesc('qty_sold')
-            ->with('product:id,name,stock')
-            ->limit(3)
-            ->get();
+        $topProducts = TransactionItem::query()
+          ->join('products', 'transaction_items.product_id', '=', 'products.id')
+          ->leftJoin('product_unit_conversions as puc', 'transaction_items.unit_conversion_id', '=', 'puc.id')
+          ->select(
+              'transaction_items.product_id',
+              'products.name',
+              'products.stock',
+              DB::raw('SUM(transaction_items.quantity * COALESCE(puc.conversion, 1)) as qty_sold')
+          )
+          ->whereIn('transaction_id', $transactionsToday->pluck('id'))
+          ->groupBy('transaction_items.product_id', 'products.name', 'products.stock')
+          ->orderByDesc('qty_sold')
+          ->limit(3)
+          ->get();
 
         // produk hampir habis
         $stockAlerts = Product::where('stock', '<=', 5)

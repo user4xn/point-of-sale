@@ -79,11 +79,23 @@ class TransactionController extends Controller
 
     public function cashier()
     {
+        $cashRegister = CashRegister::whereNull('closed_at')
+            ->latest()
+            ->first();
+
+        if (!$cashRegister) {
+          return redirect()->route('dashboard')->with('flash', ['error' => 'Kas belum dibuka']);
+        }
+        
+        if($cashRegister->opened_at != now()->toDateString()) {
+          return redirect()->route('dashboard')->with('flash', ['error' => 'Terdapat kas yang tidak valid tetapi masih terbuka, harap tutup kas terlebih dahulu, lalu buka kas baru.']);
+        }
+
         $settings = Setting::first();
         $cashRegister = CashRegister::whereNull('closed_at')
             ->whereDate('opened_at', now()->toDateString())
             ->latest()
-            ->first();
+            ->firstOrFail();
 
         return inertia('Transactions/Cashier', [
             'settings' => $settings,
@@ -163,7 +175,7 @@ class TransactionController extends Controller
             }
 
             $trx = Transaction::create([
-                'customer_id'     => $request->customer_id,
+                'customer_id'      => $request->customer_id,
                 'invoice_number'   => 'INV-' . now()->format('Ymd-His'),
                 'user_id'          => auth()->id(),
                 'cash_register_id' => $cashRegister->id,

@@ -222,10 +222,8 @@ const onPhoneInput = (e: Event) => {
   const target = e.target as HTMLInputElement
   let val = target.value
 
-  // hanya angka
   val = val.replace(/\D/g, '')
 
-  // max 15 digit
   if (val.length > 15) {
     val = val.slice(0, 15)
   }
@@ -236,11 +234,9 @@ const onPhoneInput = (e: Event) => {
 const onCreateCustomerPhoneInput = (e: Event) => {
   const target = e.target as HTMLInputElement
   let val = target.value
-
-  // hanya angka
+  
   val = val.replace(/\D/g, '')
 
-  // max 15 digit
   if (val.length > 15) {
     val = val.slice(0, 15)
   }
@@ -251,16 +247,12 @@ const onCreateCustomerPhoneInput = (e: Event) => {
 const applyCustomerByPhone = async () => {
   if (!inputCustomerNo.value) return
 
-  // Validasi dasar
   const phone = inputCustomerNo.value.toString().trim()
-
-  // Hanya angka
   if (!/^[0-9]+$/.test(phone)) {
     $swal.fire('Error', 'Nomor HP hanya boleh angka', 'error')
     return
   }
 
-  // Minimal 10 digit & maksimal 15 digit (standar Indonesia)
   if (phone.length < 10 || phone.length > 15) {
     $swal.fire('Error', 'Nomor HP harus 10–15 digit', 'error')
     return
@@ -270,6 +262,7 @@ const applyCustomerByPhone = async () => {
     const res = await axios.get(route('customer.find'), {
       params: { phone: inputCustomerNo.value }
     })
+
     customer.value = { id: res.data.id, name: res.data.name }
     form.value.customer_id = res.data.id
     form.value.customer_name = res.data.name

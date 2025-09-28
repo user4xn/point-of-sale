@@ -11,6 +11,11 @@ class CashRegister extends Model
         'total_sales','total_amount','status','opened_at','closed_at'
     ];
 
+    protected $casts = [
+        'opened_at' => 'datetime',
+        'closed_at' => 'datetime',
+    ];
+
     public function user() {
         return $this->belongsTo(User::class);
     }

@@ -8,10 +8,10 @@ const props = defineProps<{
   registers: any,
   filters: { from: string, to: string },
   metrics: {
-    opening_cash: number,
-    closing_cash: number,
-    current_cash: number,
-    total_transactions: number
+    total_selisih: number,
+    amount_selisih: number,
+    selisih_bulan: number,
+    late_close: number
   }
 }>()
 
@@ -37,11 +37,15 @@ const handleExport = () => {
           <Link :href="route('dashboard')">
             <h2 class="text-xl font-semibold text-gray-200 hover:text-yellow-500 transition">Dashboard Aplikasi</h2>
           </Link>
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
           <Link :href="route('reports.index')">
             <h2 class="text-xl font-semibold text-gray-200 hover:text-yellow-500 transition">Laporan</h2>
           </Link>
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
           <h2 class="text-xl font-semibold text-gray-200 underline">Laporan Kas</h2>
         </div>
       </div>
@@ -51,24 +55,24 @@ const handleExport = () => {
       <!-- Metrics -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
-          <h3 class="text-sm">Kas Awal</h3>
-          <p class="text-2xl font-bold">Rp {{ Number(metrics.opening_cash).toLocaleString() }}</p>
-          <p class="text-sm">Total kas awal sesuai filter</p>
+          <h3 class="text-sm">Total Kas Selisih</h3>
+          <p class="text-2xl font-bold">{{ metrics.total_selisih }}</p>
+          <p class="text-sm">Jumlah register dengan selisih</p>
         </div>
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
-          <h3 class="text-sm">Kas Saat Ini</h3>
-          <p class="text-2xl font-bold">Rp {{ Number(metrics.current_cash).toLocaleString() }}</p>
-          <p class="text-sm">Total kas saat ini sesuai filter</p>
+          <h3 class="text-sm">Jumlah Selisih Keseluruhan</h3>
+          <p class="text-2xl font-bold">Rp {{ Number(metrics.amount_selisih).toLocaleString() }}</p>
+          <p class="text-sm">Akumulasi selisih</p>
         </div>
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
-          <h3 class="text-sm">Kas Akhir</h3>
-          <p class="text-2xl font-bold">Rp {{ Number(metrics.closing_cash).toLocaleString() }}</p>
-          <p class="text-sm">Total kas akhir sesuai filter</p>
+          <h3 class="text-sm">Selisih Bulan Ini</h3>
+          <p class="text-2xl font-bold">Rp {{ Number(metrics.selisih_bulan).toLocaleString() }}</p>
+          <p class="text-sm">Total selisih bulan berjalan</p>
         </div>
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
-          <h3 class="text-sm">Jumlah Transaksi</h3>
-          <p class="text-2xl font-bold">{{ metrics.total_transactions }}</p>
-          <p class="text-sm">Jumlah semua transaksi sesuai filter</p>
+          <h3 class="text-sm">Kas Terlambat Ditutup</h3>
+          <p class="text-2xl font-bold">{{ metrics.late_close }}</p>
+          <p class="text-sm">Ditutup > 1 hari</p>
         </div>
       </div>
 
@@ -92,6 +96,8 @@ const handleExport = () => {
             <th class="p-2">Kas Akhir</th>
             <th class="p-2">Total Penjualan</th>
             <th class="p-2">Total Kas</th>
+            <th class="p-2">Selisih</th>
+            <th class="p-2">Keterangan</th>
             <th class="p-2">Buka Kas</th>
             <th class="p-2">Tutup Kas</th>
             <th class="p-2">Status</th>
@@ -105,6 +111,14 @@ const handleExport = () => {
             <td class="p-2">Rp {{ Number(r.closing_amount).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(r.total_sales).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(r.total_amount).toLocaleString() }}</td>
+            <td class="p-2 text-right" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) !== 0 ? 'text-red-400' : 'text-green-400'">
+              Rp {{ Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)).toLocaleString() }}
+            </td>
+            <td class="p-2">
+              <span v-if="r.status === 'open'" class="text-yellow-400">Belum Ditutup</span>
+              <span v-else-if="r.closed_at && new Date(r.closed_at).getTime() - new Date(r.opened_at).getTime() > 86400000" class="text-red-400">Terlambat</span>
+              <span v-else class="text-green-400">Tepat Waktu</span>
+            </td>
             <td class="p-2">{{ new Date(r.opened_at).toLocaleString() }}</td>
             <td class="p-2">{{ r.closed_at ? new Date(r.closed_at).toLocaleString() : '-' }}</td>
             <td class="p-2">

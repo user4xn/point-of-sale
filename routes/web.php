@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/transaction/print-pos/{transaction}', [TransactionController::class, 'printDirect'])->name('transaction.print.direct');
 
     Route::post('/customers', [CustomerController::class, 'store'])->name('customer.store');
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customer.index');
     Route::get('/customers/find', [CustomerController::class, 'findByPhone'])->name('customer.find');
 
     Route::get('/cash-register/check', [CashRegisterController::class, 'check'])->name('cash-register.check');
