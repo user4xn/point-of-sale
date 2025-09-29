@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import AfterPayModal from '@/Components/AfterPayModal.vue'
 import { CartItem } from '@/types'
+
+import { buildReceipt } from '@/utils/print-formatter'
 
 onMounted(() => {
   setInterval(() => (now.value = new Date()), 1000)
@@ -164,9 +166,33 @@ const confirmPayment = () => {
     })
 }
 
-const handlePrint = (id: number | null) => {
-  if (!id) return
-  router.post(route('transaction.print.direct', id), {}, {})
+const handlePrint = async (id: number | null) => {
+  if (!id) return;
+
+  try {
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect()
+      console.log("✅ Connected to QZ Tray")
+    }
+
+    const res = await axios.post(route("transaction.print.direct", id))
+    const data = res.data
+
+    const content = buildReceipt(data)
+
+    let printer = await qz.printers.getDefault()
+    if (!printer) {
+      const printers = await qz.printers.find()
+      console.log("📋 Printers detected:", printers)
+      printer = printers[0]
+    }
+    const config = qz.configs.create(printer)
+    await qz.print(config, [content])
+
+    console.log("✅ Print sukses ke:", printer)
+  } catch (e) {
+    console.error("❌ Print gagal", e)
+  }
 }
 
 const handleSearch = async () => {

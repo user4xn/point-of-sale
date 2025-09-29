@@ -142,7 +142,7 @@ const apps = ref([
   },
    {
     name: 'Transaksi Pengeluaran',
-    route: '',
+    route: 'expenditures.index',
     color: 'bg-yellow-700',
     cashier: false,
     icon: `

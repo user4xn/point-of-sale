@@ -32,7 +32,7 @@ class CustomerController extends Controller
         ];
 
         // Top 3 customers by spending
-        return $topCustomers = Customer::select('id', 'name', 'phone')
+        $topCustomers = Customer::select('id', 'name', 'phone')
             ->with('transactions')
             ->take(3)
             ->get();

@@ -18,6 +18,8 @@ use App\Http\Controllers\CashReportController;
 use App\Http\Controllers\PurchaseReportController;
 use App\Http\Controllers\StockOpnameReportController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\QzSignController;
+use App\Http\Controllers\ExpenditureController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +39,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/print/test', [PrintController::class, 'test'])->name('print.test');
+    Route::post('/qz-sign', [QzSignController::class, 'sign']);
     
     Route::get('/transaction/cashier', [TransactionController::class, 'cashier'])->name('transaction.cashier');
     Route::get('/transaction/today', [TransactionController::class, 'today'])->name('transaction.today');
@@ -47,6 +49,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction/search-product', [TransactionController::class, 'searchProduct'])->name('transaction.search');
     Route::get('/transaction/print/{transaction}', [TransactionController::class, 'print'])->name('transaction.print');
     Route::post('/transaction/print-pos/{transaction}', [TransactionController::class, 'printDirect'])->name('transaction.print.direct');
+
+    Route::resource('expenditures', ExpenditureController::class)->only(['index', 'create', 'store', 'destroy']);
 
     Route::post('/customers', [CustomerController::class, 'store'])->name('customer.store');
     Route::get('/customers', [CustomerController::class, 'index'])->name('customer.index');

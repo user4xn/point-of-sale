@@ -86,8 +86,7 @@ class TransactionController extends Controller
         if (!$cashRegister) {
           return redirect()->route('dashboard')->with('flash', ['error' => 'Kas belum dibuka']);
         }
-        
-        if($cashRegister->opened_at != now()->toDateString()) {
+        if(date('Y-m-d', strtotime($cashRegister->opened_at)) != now()->toDateString()) {
           return redirect()->route('dashboard')->with('flash', ['error' => 'Terdapat kas yang tidak valid tetapi masih terbuka, harap tutup kas terlebih dahulu, lalu buka kas baru.']);
         }
 
@@ -301,62 +300,35 @@ class TransactionController extends Controller
         $trx = Transaction::with(['items.product.unit', 'user'])->findOrFail($id);
         $settings = Setting::first();
 
-        // pilih connector sesuai environment
-        // di Windows → pakai nama share printer (misal "POS-80C")
-        $connector = new WindowsPrintConnector("RPP02N");
-        // kalau di Linux → /dev/usb/lp0
-        // $connector = new FilePrintConnector("/dev/usb/lp0");
-
-        $printer = new Printer($connector);
-
-        // header
-        $printer->setJustification(Printer::JUSTIFY_CENTER);
-        $printer->text(strtoupper($settings->store_name) . "\n");
-        $printer->text($settings->store_address . "\n");
-        $printer->text("Telp: " . $settings->store_contact . "\n");
-        $printer->feed();
-
-        // order info
-        $printer->setJustification(Printer::JUSTIFY_LEFT);
-        $printer->text("No: {$trx->invoice_number}\n");
-        $printer->text("Tanggal: " . $trx->created_at->format('d/m/Y H:i') . "\n");
-        $printer->text("Kasir: {$trx->user?->name}\n");
-        $printer->text("--------------------------------\n");
-
-        // items
+        $items = [];
         foreach ($trx->items as $item) {
-            $line = sprintf(
-                "%-12s %3s %s x %6s\n   %s\n",
-                substr($item->product->name, 0, 12),
-                $item->quantity,
-                strtoupper($item->unit_name),
-                $item->price,
-                $item->subtotal
-            );
-            $printer->text($line);
+            $items[] = [
+                'name'     => $item->product->name,
+                'qty'      => $item->quantity,
+                'unit'     => $item->unit_name,
+                'price'    => (float) $item->price,
+                'subtotal' => (float) $item->subtotal,
+            ];
         }
-        $printer->text("--------------------------------\n");
 
-        // summary
-        $printer->text("Subtotal : {$trx->total_price}\n");
-        $printer->text("Diskon   : {$trx->discount}\n");
-        $printer->text("PPN      : {$trx->tax}\n");
-        $printer->text("TOTAL    : {$trx->grand_total}\n");
-        $printer->text("Tunai    : {$trx->paid_amount}\n");
-        $printer->text("Kembali  : {$trx->change_amount}\n");
-        $printer->feed();
-
-        // footer
-        $printer->setJustification(Printer::JUSTIFY_CENTER);
-        $printer->text("*** {$settings->receipt_template} ***\n");
-        $printer->text("Terima Kasih & Sampai Jumpa\n");
-        $printer->feed(4);
-
-        $printer->cut();
-        $printer->close();
-
-        return back()->with('success', 'Struk berhasil dicetak.');
+        return response()->json([
+            'store_name'   => $settings->store_name,
+            'store_address'=> $settings->store_address,
+            'store_contact'=> $settings->store_contact,
+            'invoice'      => $trx->invoice_number,
+            'date'         => $trx->created_at->format('d/m/Y H:i'),
+            'cashier'      => $trx->user?->name,
+            'items'        => $items,
+            'total_price'  => (float) $trx->total_price,
+            'discount'     => (float) $trx->discount,
+            'tax'          => (float) $trx->tax,
+            'grand_total'  => (float) $trx->grand_total,
+            'paid_amount'  => (float) $trx->paid_amount,
+            'change_amount'=> (float) $trx->change_amount,
+            'footer'       => $settings->receipt_template,
+        ]);
     }
+
 
     public function today()
     {

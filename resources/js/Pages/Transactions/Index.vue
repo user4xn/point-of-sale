@@ -4,6 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
 import { ref, watch } from 'vue'
 import Modal from '@/Components/Modal.vue'
+import axios from 'axios'
+import { buildReceipt } from "@/utils/print-formatter"
 
 const props = defineProps<{
   transactions: any,
@@ -46,9 +48,33 @@ watch(search, (val) => {
   )
 })
 
-const handlePrint = (id: number) => {
-  if (!id) return
-  router.post(route('transaction.print.direct', id), {}, {})
+const handlePrint = async (id: number | null) => {
+  if (!id) return;
+
+  try {
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect()
+      console.log("✅ Connected to QZ Tray")
+    }
+
+    const res = await axios.post(route("transaction.print.direct", id))
+    const data = res.data
+
+    const content = buildReceipt(data)
+
+    let printer = await qz.printers.getDefault()
+    if (!printer) {
+      const printers = await qz.printers.find()
+      console.log("📋 Printers detected:", printers)
+      printer = printers[0]
+    }
+    const config = qz.configs.create(printer)
+    await qz.print(config, [content])
+
+    console.log("✅ Print sukses ke:", printer)
+  } catch (e) {
+    console.error("❌ Print gagal", e)
+  }
 }
 
 const showDetail = ref(false)
