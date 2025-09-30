@@ -86,6 +86,10 @@ const handleExport = () => {
         <button @click="handleExport" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded text-white">Export Excel</button>
       </div>
 
+      <p class="text-sm mb-2 text-gray-400">
+        *Kas Akhir - Total Kas = 0, Jika tidak maka terdapat selisih +/-.
+      </p>
+
       <!-- Table -->
       <table class="w-full text-sm border border-gray-600 rounded">
         <thead>
@@ -109,9 +113,9 @@ const handleExport = () => {
             <td class="p-2">{{ r.user?.name }}</td>
             <td class="p-2">Rp {{ Number(r.opening_amount).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(r.closing_amount).toLocaleString() }}</td>
-            <td class="p-2">Rp {{ Number(r.total_sales).toLocaleString() }}</td>
+            <td class="p-2">{{ parseInt(r.total_sales) }}</td>
             <td class="p-2">Rp {{ Number(r.total_amount).toLocaleString() }}</td>
-            <td class="p-2 text-right" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) !== 0 ? 'text-red-400' : 'text-green-400'">
+            <td class="p-2 text-right" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) < 0 ? 'text-red-400' : 'text-green-400'">
               Rp {{ Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)).toLocaleString() }}
             </td>
             <td class="p-2">
