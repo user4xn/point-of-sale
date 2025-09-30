@@ -13,6 +13,13 @@ function formatCurrency(num: number) {
   return "Rp" + num.toLocaleString("id-ID");
 }
 
+function formatFooter(template: string, data: any) {
+  return template
+    .replace(/\[store_name\]/g, data.store_name || "")
+    .replace(/\[store_address\]/g, data.store_address || "")
+    .replace(/\[store_contact\]/g, data.store_contact || "");
+}
+
 export function buildReceipt(data: any) {
   let out = "";
 
@@ -47,8 +54,10 @@ export function buildReceipt(data: any) {
 
   out += divider();
 
+  const footerText = formatFooter(data.footer, data);
+
   // Footer
-  out += "*** " + data.footer + " ***\n";
+  out += "*** " + footerText + " ***\n";
   out += "Terima Kasih & Sampai Jumpa\n\n\n";
 
   return out;
