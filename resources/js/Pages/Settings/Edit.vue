@@ -140,7 +140,7 @@ const renderTemplate = () => {
       <!-- Receipt Preview -->
       <div class="bg-white text-black border border-gray-400 rounded p-3 w-[280px] font-mono text-[12px] leading-tight">
         <!-- Header -->
-        <div class="text-left mb-2">
+        <div class="text-right mb-2">
           <div class="uppercase font-bold text-[14px]">
             {{ form.store_name || 'NAMA TOKO' }}
           </div>
