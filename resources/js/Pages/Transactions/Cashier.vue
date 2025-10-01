@@ -92,7 +92,12 @@ watch(
       const conversion = i.conversion ?? 1
       const maxQty = Math.floor(i.stock / conversion)
 
-      if (i.quantity > maxQty) i.quantity = maxQty
+      // kalau stok ga cukup untuk konversi
+      if (maxQty < 1) {
+        i.quantity = 0 // atau lu bisa set ke 1 tapi disabled pilihannya
+      } else if (i.quantity > maxQty) {
+        i.quantity = maxQty
+      }
     })
   },
   { deep: true }
@@ -335,6 +340,17 @@ const updatePrice = (i: number) => {
       item.price = uc.sell_price
       item.conversion = uc.conversion
       item.unit_name = uc.unit_name
+
+      // validasi stock saat pilih konversi
+      const maxQty = Math.floor(item.stock / uc.conversion)
+      if (maxQty < 1) {
+        // otomatis batalin pilihan kalau stock ga cukup
+        item.unit_conversion_id = null
+        item.price = item.default_price ?? 0
+        item.conversion = 1
+        item.unit_name = item.default_unit_name
+        $swal.fire('Stok tidak mencukupi', 'Stock kurang dari 1 unit kardus', 'error')
+      }
     }
   } else {
     item.price = item.default_price ?? 0
@@ -342,8 +358,6 @@ const updatePrice = (i: number) => {
     item.unit_name = item.default_unit_name
   }
 }
-
-
 </script>
 
 <template>
@@ -434,7 +448,7 @@ const updatePrice = (i: number) => {
                   <select v-model="item.unit_conversion_id" @change="updatePrice(i)"
                     class="bg-gray-700 rounded text-white p-1 w-full py-2">
                     <option :value="null">{{ item.default_unit_name }}</option>
-                    <option v-for="uc in item.unit_conversions" :key="uc.id" :value="uc.id">
+                    <option v-for="uc in item.unit_conversions" :key="uc.id" :value="uc.id" :disabled="Math.floor(item.stock / uc.conversion) < 1">
                       {{ uc.unit_name }}
                     </option>
                   </select>
