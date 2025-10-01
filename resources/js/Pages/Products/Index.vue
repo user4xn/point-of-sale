@@ -176,88 +176,120 @@ const deleteUnit = async (c: CategoryUnit) => {
           Hapus Filter
         </button>
       </div>
-
-      <table class="w-full text-sm border border-gray-600 rounded">
-        <thead>
-          <tr class="bg-gray-600/50">
-            <th class="p-2 text-start">#</th>
-            <th class="p-2 text-start">Gambar</th>
-            <th class="p-2 text-start">Nama</th>
-            <th class="p-2 text-start">SKU</th>
-            <th class="p-2 text-start">Kategori</th>
-            <th class="p-2 text-start">Unit</th>
-            <th class="p-2 text-start">Supplier</th>
-            <th class="p-2 text-start">Harga Beli</th>
-            <th class="p-2 text-start">Harga Jual</th>
-            <th class="p-2 text-start">Stok (Terkecil)</th>
-            <th class="p-2 text-start">Status</th>
-            <th class="p-2 text-end">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(product, i) in props.products.data"
-            :key="product.id"
-            class="hover:bg-white/10 transition"
-          >
-            <td class="p-2">{{ props.products.from + i }}</td>
-            <td class="p-2">
-              <img
-                v-if="product.image"
-                :src="`/storage/${product.image}`"
-                alt="product"
-                class="h-12 w-12 object-contain rounded bg-gray-700"
-              />
-              <span v-else class="text-gray-400">-</span>
-            </td>
-            <td class="p-2">{{ product.name }}</td>
-            <td class="p-2">{{ product.sku }}</td>
-            <td class="p-2">{{ product.category?.name || '-' }}</td>
-            <td class="p-2">
-              <div>
-                {{ product.unit?.name }}:
-                {{ product.stock }}
-              </div>
-              <div 
-                v-for="uc in product.unit_conversions" 
-                :key="uc.id" 
-                class="text-gray-400 text-sm"
-              >
-                
-              {{ uc.unit_name }}:
-              {{ Math.floor(product.stock / uc.conversion) }} 
-              </div>
-            </td>
-            <td class="p-2">{{ product.supplier?.name || '-' }}</td>
-            <td class="p-2">Rp {{ Number(product.purchase_price).toLocaleString() }}</td>
-            <td class="p-2">Rp {{ Number(product.sell_price).toLocaleString() }}</td>
-            <td class="p-2 text-center">{{ product.stock }}</td>
-            <td class="p-2">
-              <span
-                :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"
-              >
-                {{ product.status === 'active' ? 'Aktif' : 'Nonaktif' }}
-              </span>
-            </td>
-            <td class="p-2">
-              <div class="flex gap-2 justify-end">
-                <Link
-                  :href="`/products/${product.id}/edit`"
-                  class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-600 rounded">
+          <thead>
+            <tr class="bg-gray-600/50">
+              <th class="whitespace-nowarp p-2 text-start">#</th>
+              <th class="whitespace-nowarp p-2 text-start">Gambar</th>
+              <th class="whitespace-nowarp p-2 text-start">Nama</th>
+              <th class="whitespace-nowarp p-2 text-start">SKU</th>
+              <th class="whitespace-nowarp p-2 text-start">Kategori</th>
+              <th class="whitespace-nowarp p-2 text-start">Unit</th>
+              <th class="whitespace-nowarp p-2 text-start">Supplier</th>
+              <th class="whitespace-nowarp p-2 text-start">Harga Beli</th>
+              <th class="whitespace-nowarp p-2 text-start">Harga Jual</th>
+              <th class="whitespace-nowarp p-2 text-center">Stok (Terkecil)</th>
+              <th class="whitespace-nowarp p-2 text-start">Status</th>
+              <th class="whitespace-nowarp p-2 text-end">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(product, i) in props.products.data"
+              :key="product.id"
+              class="hover:bg-white/10 transition"
+            >
+              <td class="p-2">{{ props.products.from + i }}</td>
+              <td class="p-2">
+                <img
+                  v-if="product.image"
+                  :src="`/storage/${product.image}`"
+                  alt="product"
+                  class="h-12 w-12 object-contain rounded bg-gray-700"
+                />
+                <span v-else class="text-gray-400">-</span>
+              </td>
+              <td class="p-2">{{ product.name }}</td>
+              <td class="p-2">{{ product.sku }}</td>
+              <td class="p-2">{{ product.category?.name || '-' }}</td>
+              <td class="p-2 min-w-[100px]">
+                <div>
+                  {{ product.unit?.name }}:
+                  {{ product.stock }}
+                </div>
+                <div 
+                  v-for="uc in product.unit_conversions" 
+                  :key="uc.id" 
+                  class="text-gray-400 text-sm"
                 >
-                  Edit
-                </Link>
-                <button
-                  @click="deleteProduct(product.id)"
-                  class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
+                  
+                {{ uc.unit_name }}:
+                {{ Math.floor(product.stock / uc.conversion) }} 
+                </div>
+              </td>
+              <td class="p-2">{{ product.supplier?.name || '-' }}</td>
+              <td class="p-2 min-w-[140px]">
+                <!-- Harga beli default -->
+                <div>
+                  {{ product.unit?.name }}: 
+                  Rp {{ Number(product.purchase_price).toLocaleString() }}
+                </div>
+  
+                <!-- Harga beli konversi -->
+                <div
+                  v-for="uc in product.unit_conversions"
+                  :key="uc.id"
+                  class="text-gray-400 text-sm"
                 >
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                  {{ uc.unit_name }}: Rp {{ Number(uc.purchase_price).toLocaleString() }}
+                </div>
+              </td>
+  
+              <td class="p-2 min-w-[140px]">
+                <!-- Harga jual default -->
+                <div>
+                  {{ product.unit?.name }}: 
+                  Rp {{ Number(product.sell_price).toLocaleString() }}
+                </div>
+  
+                <!-- Harga jual konversi -->
+                <div
+                  v-for="uc in product.unit_conversions"
+                  :key="uc.id"
+                  class="text-gray-400 text-sm"
+                >
+                  {{ uc.unit_name }}: Rp {{ Number(uc.sell_price).toLocaleString() }}
+                </div>
+              </td>
+              <td class="p-2 text-center">{{ product.stock }}</td>
+              <td class="p-2">
+                <span
+                  :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"
+                >
+                  {{ product.status === 'active' ? 'Aktif' : 'Nonaktif' }}
+                </span>
+              </td>
+              <td class="p-2">
+                <div class="flex gap-2 justify-end">
+                  <Link
+                    :href="`/products/${product.id}/edit`"
+                    class="px-2 py-1 bg-yellow-500 hover:bg-yellow-500/80 rounded text-white"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    @click="deleteProduct(product.id)"
+                    class="px-2 py-1 bg-red-600 hover:bg-red-600/80 rounded text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <Pagination :links="props.products.links" :data="props.products" />
     </div>
