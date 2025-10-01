@@ -52,7 +52,7 @@ const submit = () => {
   <Head title="Buat Purchase Order" />
 
   <AuthenticatedLayout>
-    <div class="p-6 text-white">
+    <div class="p-6 text-white min-h-[80vh]">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-xl font-bold">Buat Purchase Order</h1>
         <Link href="/purchase-orders" class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white">

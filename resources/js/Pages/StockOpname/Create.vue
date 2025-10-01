@@ -90,7 +90,7 @@ const availableProducts = computed(() => {
 <template>
   <Head title="Tambah Stock Opname" />
 
-  <div class="p-6 text-white pb-20">
+  <div class="p-6 text-white pb-20 min-h-[80vh]">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-xl font-bold">Tambah Stock Opname</h1>
