@@ -189,7 +189,6 @@ const deleteUnit = async (c: CategoryUnit) => {
               <th class="whitespace-nowarp p-2 text-start">Supplier</th>
               <th class="whitespace-nowarp p-2 text-start">Harga Beli</th>
               <th class="whitespace-nowarp p-2 text-start">Harga Jual</th>
-              <th class="whitespace-nowarp p-2 text-center">Stok (Terkecil)</th>
               <th class="whitespace-nowarp p-2 text-start">Status</th>
               <th class="whitespace-nowarp p-2 text-end">Aksi</th>
             </tr>
@@ -262,7 +261,6 @@ const deleteUnit = async (c: CategoryUnit) => {
                   {{ uc.unit_name }}: Rp {{ Number(uc.sell_price).toLocaleString() }}
                 </div>
               </td>
-              <td class="p-2 text-center">{{ product.stock }}</td>
               <td class="p-2">
                 <span
                   :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"
