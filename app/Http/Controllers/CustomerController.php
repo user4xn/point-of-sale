@@ -17,7 +17,7 @@ class CustomerController extends Controller
                 $q->where('name', 'like', "%{$request->search}%")
                   ->orWhere('phone', 'like', "%{$request->search}%");
             })
-            ->withCount('transactions') // asumsi relasi di model Customer: hasMany(Transaction)
+            ->withCount('transactions')
             ->withSum('transactions', 'grand_total')
             ->orderBy('name');
 
@@ -31,15 +31,24 @@ class CustomerController extends Controller
             'total_trx'       => Transaction::count(),
         ];
 
-        // Top 3 customers by spending
-        $topCustomers = Customer::select('id', 'name', 'phone')
-            ->with('transactions')
-            ->take(3)
-            ->get();
+        // Top customers by spending (filtered by bulan kalau ada)
+        $topCustomersQuery = Customer::select('id', 'name', 'phone')
+            ->withSum(['transactions as total_spent' => function($q) use ($request) {
+                if ($request->month) {
+                    $q->whereMonth('created_at', $request->month);
+                }
+                if ($request->year) {
+                    $q->whereYear('created_at', $request->year);
+                }
+            }], 'grand_total')
+            ->orderByDesc('total_spent')
+            ->take(3);
+
+        $topCustomers = $topCustomersQuery->get();
 
         return Inertia::render('Customers/Index', [
             'customers'    => $customers,
-            'filters'      => $request->only('search'),
+            'filters'      => $request->only('search','month','year'),
             'metrics'      => $metrics,
             'topCustomers' => $topCustomers,
         ]);

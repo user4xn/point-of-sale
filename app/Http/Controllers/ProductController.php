@@ -14,7 +14,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with(['category', 'unit', 'supplier'])
+        $products = Product::with(['category', 'unit', 'supplier', 'unitConversions'])
             ->orderBy('created_at', 'desc');
 
         if ($request->has('search') && $request->search !== '') {

@@ -6,7 +6,7 @@ import { ref, watch } from 'vue'
 
 const props = defineProps<{
   customers: any,
-  filters: { search?: string },
+  filters: { search?: string, month?: string, year?: string },
   metrics: {
     total_customers: number,
     total_points: number,
@@ -17,11 +17,13 @@ const props = defineProps<{
 }>()
 
 const search = ref(props.filters.search || '')
+const month = ref(props.filters.month || '')
+const year  = ref(props.filters.year || '')
 
-watch(search, (val) => {
+watch([search, month, year], ([s, m, y]) => {
   router.get(
-    route('customers.index'),
-    { search: val },
+    route('customer.index'),
+    { search: s, month: m, year: y },
     { preserveState: true, replace: true }
   )
 })
@@ -66,16 +68,37 @@ watch(search, (val) => {
         </div>
       </div>
 
+      <div class="filters mb-4 flex gap-2">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Cari nama/phone..."
+          class="px-4 py-2 rounded-full bg-gray-700 border border-gray-600 text-white"
+        />
+
+        <select v-model="month" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+          <option value="">Semua Bulan</option>
+          <option v-for="m in 12" :key="m" :value="m">{{ new Date(0, m-1).toLocaleString('id-ID',{month:'long'}) }}</option>
+        </select>
+
+        <select v-model="year" class="px-3 py-2 rounded-full bg-gray-700 border border-gray-600 text-white">
+          <option value="">Semua Tahun</option>
+          <option v-for="y in [2023,2024,2025]" :key="y" :value="y">{{ y }}</option>
+        </select>
+      </div>
+
       <!-- Top Customers -->
       <div class="mb-6">
         <h3 class="text-lg font-semibold mb-2">Top 3 Customer</h3>
         <ul class="divide-y divide-gray-700">
           <li v-for="c in topCustomers" :key="c.id" class="flex justify-between py-2">
             <span>{{ c.name }} <span class="text-gray-400">({{ c.phone }})</span></span>
-            <span class="font-bold">Rp {{ Number(c.transactions_sum_grand_total).toLocaleString() }}</span>
+            <span class="font-bold">Rp {{ Number(c.total_spent || 0).toLocaleString() }}</span>
           </li>
         </ul>
       </div>
+
+      
 
       <!-- Filter -->
       <div class="filters mb-4 flex gap-2">

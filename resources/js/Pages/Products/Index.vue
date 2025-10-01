@@ -189,7 +189,7 @@ const deleteUnit = async (c: CategoryUnit) => {
             <th class="p-2 text-start">Supplier</th>
             <th class="p-2 text-start">Harga Beli</th>
             <th class="p-2 text-start">Harga Jual</th>
-            <th class="p-2 text-start">Stok</th>
+            <th class="p-2 text-start">Stok (Terkecil)</th>
             <th class="p-2 text-start">Status</th>
             <th class="p-2 text-end">Aksi</th>
           </tr>
@@ -213,11 +213,25 @@ const deleteUnit = async (c: CategoryUnit) => {
             <td class="p-2">{{ product.name }}</td>
             <td class="p-2">{{ product.sku }}</td>
             <td class="p-2">{{ product.category?.name || '-' }}</td>
-            <td class="p-2">{{ product.unit?.name || '-' }}</td>
+            <td class="p-2">
+              <div>
+                {{ product.unit?.name }}:
+                {{ product.stock }}
+              </div>
+              <div 
+                v-for="uc in product.unit_conversions" 
+                :key="uc.id" 
+                class="text-gray-400 text-sm"
+              >
+                
+              {{ uc.unit_name }}:
+              {{ Math.floor(product.stock / uc.conversion) }} 
+              </div>
+            </td>
             <td class="p-2">{{ product.supplier?.name || '-' }}</td>
             <td class="p-2">Rp {{ Number(product.purchase_price).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(product.sell_price).toLocaleString() }}</td>
-            <td class="p-2">{{ product.stock }}</td>
+            <td class="p-2 text-center">{{ product.stock }}</td>
             <td class="p-2">
               <span
                 :class="product.status === 'active' ? 'text-green-400' : 'text-red-400'"

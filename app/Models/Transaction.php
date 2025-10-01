@@ -9,7 +9,7 @@ class Transaction extends Model
     protected $fillable = [
         'invoice_number','user_id','cash_register_id',
         'customer_name','total_price','discount','tax',
-        'grand_total','paid_amount','change_amount','status'
+        'grand_total','paid_amount','change_amount','status','customer_id'
     ];
 
     public function user() {
