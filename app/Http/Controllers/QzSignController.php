@@ -18,8 +18,11 @@ class QzSignController extends Controller
         }
 
         $signature = null;
-        // Sesuai dengan qz.security.setSignatureAlgorithm("SHA512")
-        openssl_sign($dataToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA512);
+        $success = openssl_sign($dataToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA512);
+
+        if (!$success) {
+            return response()->json(['error' => 'Failed to sign data'], 500);
+        }
 
         openssl_free_key($pkeyId);
 
