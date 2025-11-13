@@ -9,6 +9,14 @@ const emit = defineEmits(['close', 'print'])
 </script>
 
 <template>
+  <Transition
+    enter-active-class="ease-out duration-300"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="ease-in duration-200"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
   <div
     v-if="show"
     class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
@@ -35,4 +43,5 @@ const emit = defineEmits(['close', 'print'])
       </div>
     </div>
   </div>
+  </Transition>
 </template>

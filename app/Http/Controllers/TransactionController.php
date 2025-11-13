@@ -139,6 +139,7 @@ class TransactionController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
+            'payment_method' => 'required|in:cash,bank',
         ]);
 
         DB::beginTransaction();
@@ -186,6 +187,7 @@ class TransactionController extends Controller
                 'paid_amount'      => $request->paid_amount,
                 'change_amount'    => $change,
                 'status'           => 'paid',
+                'payment_method'   => $request->payment_method,
             ]);
 
             foreach ($request->items as $item) {

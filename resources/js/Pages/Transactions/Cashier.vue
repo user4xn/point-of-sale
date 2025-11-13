@@ -2,16 +2,12 @@
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import axios from 'axios'
-import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, inject, onUnmounted } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import AfterPayModal from '@/Components/AfterPayModal.vue'
 import { CartItem } from '@/types'
 
 import { buildReceipt } from '@/utils/print-formatter'
-
-onMounted(() => {
-  setInterval(() => (now.value = new Date()), 1000)
-})
 
 const props = defineProps<{
   settings: any
@@ -24,10 +20,12 @@ const now = ref<Date>(new Date())
 const cart = ref<CartItem[]>([])
 const change = ref(0)
 const showPayModal = ref(false)
+const showMethodModal = ref(false)
 const cashInputRef = ref<HTMLInputElement | null>(null)
 const cashInputRaw = ref<number>(0)
 const search = ref<string>('')
 const showProductModal = ref(false)
+const searchInputRef = ref<HTMLInputElement | null>(null)
 const searchResults = ref<any[]>([])
 const searchError = ref(false)
 const showTodayTrxModal = ref(false)
@@ -40,9 +38,64 @@ const customerForm = ref({ name: '', phone: '', email: '', address: '' })
 const inputCustomerNo = ref<string>('')
 const customerPoints = ref(0)
 const customerNameRef = ref<HTMLInputElement|null>(null)
+const payButtonRef = ref<HTMLButtonElement|null>(null)
+const paymentMethod = ref<string>('')
+const cashButtonRef = ref<HTMLButtonElement|null>(null)
+const bankButtonRef = ref<HTMLButtonElement|null>(null)
+
+
+onMounted(() => {
+  setInterval(() => (now.value = new Date()), 1000)
+  window.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeyDown)
+})
+
+const onKeyDown = (e: any) => {
+  if (e.ctrlKey && e.key === '/') {
+    focusSearchInput()
+  }
+  
+  if (e.ctrlKey && e.key === 'Enter') {
+    payShortcut()
+  }
+
+  if (e.key === 'F8' && showMethodModal.value) {
+    cashButtonRef.value?.click()
+  }
+
+  if (e.key === 'F9' && showMethodModal.value) {
+    bankButtonRef.value?.click()
+  }
+}
+
+const focusSearchInput = () => {
+  nextTick(() => {
+    searchInputRef.value?.focus()
+  })
+}
+
+const payShortcut = () => {
+  payButtonRef.value?.click()
+}
 
 watch(showCustomerModal, (open) => {
   if (open) nextTick(() => customerNameRef.value?.focus())
+})
+
+watch(paymentMethod, (value) => {
+  if (showMethodModal.value == true && value == 'cash') {
+    openPayModal()
+  }
+})
+
+watch(showPayModal, (open) => {
+  if (!open) {
+    paymentMethod.value = ''
+    cashInputRaw.value = 0
+  }
 })
 
 const form = ref({
@@ -50,6 +103,7 @@ const form = ref({
   customer_name: '',
   items: [] as { product_id: number; quantity: number; price: number }[],
   paid_amount: 0,
+  payment_method: '',
 })
 
 const subtotal = computed(() =>
@@ -109,7 +163,12 @@ const openTodayTrxModal = async () => {
   showTodayTrxModal.value = true
 }
 
+const openMethodModal = () => {
+  showMethodModal.value = true
+}
+
 const openPayModal = () => {
+  showMethodModal.value = false
   showPayModal.value = true
   cashInputRaw.value = 0
   change.value = 0
@@ -119,7 +178,7 @@ const openPayModal = () => {
 }
 
 const confirmPayment = () => {
-  if (cashInputRaw.value < grandTotal.value) {
+  if (paymentMethod.value == '' || (paymentMethod.value == 'cash' && (cashInputRaw.value < grandTotal.value))) {
     return
   } 
 
@@ -130,8 +189,9 @@ const confirmPayment = () => {
     unit_conversion_id: i.unit_conversion_id,
   }))
 
-  form.value.paid_amount = cashInputRaw.value
-  change.value = cashInputRaw.value - grandTotal.value
+  form.value.payment_method = paymentMethod.value
+  form.value.paid_amount = paymentMethod.value == 'cash' ? cashInputRaw.value : grandTotal.value
+  change.value = paymentMethod.value == 'cash' ? cashInputRaw.value - grandTotal.value : 0
 
   axios.post(route('transaction.store'), form.value)
     .then((res) => {
@@ -146,10 +206,6 @@ const confirmPayment = () => {
         timer: 1200,
         didOpen: () => {
           $swal.showLoading();
-          const timer = $swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${$swal.getTimerLeft()}`;
-          }, 100);
         },
         willClose: () => {
           clearInterval(timerInterval);
@@ -249,6 +305,10 @@ const addToCart = (product: any) => {
   }
 }
 
+const removeFromCart = (index: number) => {
+  cart.value.splice(index, 1)
+}
+
 const onPhoneInput = (e: Event) => {
   const target = e.target as HTMLInputElement
   let val = target.value
@@ -328,6 +388,7 @@ const resetState = () => {
   customer.value = { id: null, name: '' }
   form.value.customer_id = null
   customerPoints.value = 0
+  paymentMethod.value = ''
   cart.value = []
 }
 
@@ -358,6 +419,12 @@ const updatePrice = (i: number) => {
     item.unit_name = item.default_unit_name
   }
 }
+
+const paymentBank = () => {
+  showMethodModal.value = false
+  paymentMethod.value = 'bank'
+  confirmPayment()
+}
 </script>
 
 <template>
@@ -385,6 +452,7 @@ const updatePrice = (i: number) => {
       <div class="p-4">
         <div class="relative">
           <input
+            ref="searchInputRef"
             v-model="search"
             @keyup.enter="handleSearch"
             type="text"
@@ -439,9 +507,19 @@ const updatePrice = (i: number) => {
                 v-for="(item, i) in cart"
                 :key="item.product_id"
                 class="border-b border-gray-600/20"
+                :class="item.stock == 0 ? 'bg-red-600/20' : ''"
               >
                 <td class="p-2">{{ i + 1 }}</td>
-                <td class="p-2">{{ item.sku }}</td>
+                <td class="p-2">
+                  <span class="flex gap-2 items-center">
+                    <i 
+                      @click="removeFromCart(i)"                  
+                      class="bg-gray-600 p-1 rounded-md hover:bg-red-600 transition ease-in-out duration-300 cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </i>
+                    {{ item.sku }}
+                  </span>
+                </td>
                 <td class="p-2">{{ item.name }}</td>
                 <td class="p-2">Rp{{ item.price.toLocaleString() }}</td>
                 <td class="p-2">
@@ -514,8 +592,9 @@ const updatePrice = (i: number) => {
               placeholder="Input No Member"
             />
             <button
+              ref="payButtonRef"
               type="button"
-              @click="openPayModal"
+              @click="openMethodModal"
               class="p-4 mt-4 bg-green-500 rounded-xl w-full text-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="!canPay"
             >
@@ -531,6 +610,13 @@ const updatePrice = (i: number) => {
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="flex gap-2 justify-center">
+      <span><b class="text-red-600">[CTRL + /]</b> : Pintasan Input Produk &nbsp;|</span>
+      <span><b class="text-red-600">[CTRL + Enter]</b> : Pintasan Bayar &nbsp;|</span>
+      <span><b class="text-red-600">[F8]</b> : Bayar Tunai (Disaat Popup Bayar) &nbsp;|</span>
+      <span><b class="text-red-600">[F9]</b> : Bayar Non Tunai (Disaat Popup Bayar)</span>
     </div>
 
     <!-- FOOTER -->
@@ -552,6 +638,33 @@ const updatePrice = (i: number) => {
         Cek Transaksi
       </Link>
     </div>
+
+    <!-- MODAL PAYMENT METHOD -->
+    <Modal :show="showMethodModal" maxWidth="md" @close="showMethodModal = false">
+      <div class="p-6 text-white text-center">
+        <h2 class="text-xl font-bold mb-4">Pilih Metode Pembayaran</h2>
+        <div class="flex justify-between gap-4">
+          <button
+            ref="cashButtonRef"
+            @click="paymentMethod = 'cash'"
+            @keyup.enter="paymentMethod = 'cash'"
+            class="flex flex-col items-center justify-center w-1/2 h-40 rounded-lg shadow-md text-white hover:scale-105 transition-transform duration-200 bg-green-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand-coins-icon lucide-hand-coins"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg>
+            <span class="mt-3 font-semibold">Tunai [F8]</span>
+          </button>
+          <button
+            ref="bankButtonRef"
+            @click="paymentBank"
+            @keyup.alt.enter="paymentBank"
+            class="flex flex-col items-center justify-center w-1/2 h-40 rounded-lg shadow-md text-white hover:scale-105 transition-transform duration-200 bg-red-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-qr-code-icon lucide-scan-qr-code"><path d="M17 12v4a1 1 0 0 1-1 1h-4"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M17 8V7"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M7 17h.01"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="5" height="5" rx="1"/></svg>
+            <span class="mt-3 font-semibold">Non Tunai [F9]</span>
+          </button>
+        </div>
+      </div>
+    </Modal>
 
     <!-- MODAL BAYAR -->
     <Modal :show="showPayModal" maxWidth="md" @close="showPayModal = false">

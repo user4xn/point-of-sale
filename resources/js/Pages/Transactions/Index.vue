@@ -16,6 +16,13 @@ const props = defineProps<{
       total_sales: number,
       total_items: number,
       avg_transaction: number,
+
+      total_cash: number,
+      total_non_cash: number,
+      cash_ratio: number,
+      non_cash_ratio: number,
+      total_cash_sales: number,
+      total_non_cash_sales: number,
     },
     week : {
       total_transactions: number,
@@ -125,7 +132,7 @@ const fetchTransaction = async (id: number) => {
           <h3 class="text-sm font-medium">Item Terjual Hari Ini</h3>
           <p class="text-2xl font-bold mt-2">{{ dashboard.today.total_items }}</p>
           <p class="text-sm text-gray-400">
-            Avg: Rp {{ Number(dashboard.today.avg_transaction).toLocaleString() }}
+            Rata-rata: Rp {{ Number(dashboard.today.avg_transaction).toLocaleString() }}
           </p>
         </div>
 
@@ -161,6 +168,21 @@ const fetchTransaction = async (id: number) => {
             Rp {{ Number(dashboard.alltime.total_sales).toLocaleString() }}
           </p>
         </div>
+
+        <!-- Rasio Tunai / Non Tunai -->
+        <div class="bg-gray-900 border-b-4 border-green-400 p-4 shadow text-white">
+          <h3 class="text-sm font-medium">Pembayaran Hari Ini</h3>
+
+          <p class="text-sm mt-2 text-green-400">Tunai: {{ dashboard.today.total_cash }} trx</p>
+          <p class="text-xs text-green-300">Rp {{ Number(dashboard.today.total_cash_sales).toLocaleString() }}</p>
+
+          <p class="text-sm mt-1 text-red-400">Non Tunai: {{ dashboard.today.total_non_cash }} trx</p>
+          <p class="text-xs text-red-300">Rp {{ Number(dashboard.today.total_non_cash_sales).toLocaleString() }}</p>
+
+          <p class="text-xs mt-2 text-gray-400">
+            Rasio Tunai: {{ dashboard.today.cash_ratio }}% • Non Tunai: {{ dashboard.today.non_cash_ratio }}%
+          </p>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -179,6 +201,7 @@ const fetchTransaction = async (id: number) => {
           <tr class="bg-gray-600/50">
             <th class="p-2 text-start">#</th>
             <th class="p-2 text-start">Invoice</th>
+            <th class="p-2 text-start">Metode Bayar</th>
             <th class="p-2 text-start">Tanggal</th>
             <th class="p-2 text-start">Kasir</th>
             <th class="p-2 text-start">Customer</th>
@@ -196,6 +219,7 @@ const fetchTransaction = async (id: number) => {
           >
             <td class="p-2">{{ props.transactions.from + i }}</td>
             <td class="p-2 font-mono">{{ trx.invoice_number }}</td>
+            <td class="p-2 font-mono" :class="trx.payment_method === 'cash' ? 'text-green-400' : 'text-red-400'">{{ trx.payment_method == 'cash' ? 'Tunai' : 'Non Tunai' }}</td>
             <td class="p-2">{{ new Date(trx.created_at).toLocaleString() }}</td>
             <td class="p-2">{{ trx.user?.name }}</td>
             <td class="p-2">{{ trx.customer_name || '-' }}</td>
