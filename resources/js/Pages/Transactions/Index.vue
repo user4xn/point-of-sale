@@ -16,31 +16,34 @@ const props = defineProps<{
       total_sales: number,
       total_items: number,
       avg_transaction: number,
-
-      total_cash: number,
-      total_non_cash: number,
-      cash_ratio: number,
-      non_cash_ratio: number,
-      total_cash_sales: number,
-      total_non_cash_sales: number,
+      payment: {
+        cash: number,
+        noncash: number,
+      }
     },
     week : {
       total_transactions: number,
       total_sales: number,
-      total_items: number,
-      avg_transaction: number,
+      payment: {
+        cash: number,
+        noncash: number,
+      }
     },
     month : {
       total_transactions: number,
       total_sales: number,
-      total_items: number,
-      avg_transaction: number,
+      payment: {
+        cash: number,
+        noncash: number,
+      }
     },
     alltime : {
       total_transactions: number,
       total_sales: number,
-      total_items: number,
-      avg_transaction: number,
+      payment: {
+        cash: number,
+        noncash: number,
+      }
     }
   }
 }>()
@@ -117,6 +120,16 @@ const fetchTransaction = async (id: number) => {
 
       <!-- Metrics -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        
+        <!-- Item Terjual -->
+        <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white col-span-4">
+          <h3 class="text-sm font-medium">Item Terjual Hari Ini</h3>
+          <p class="text-2xl font-bold mt-2">{{ dashboard.today.total_items }}</p>
+          <p class="text-sm text-gray-400">
+            Rata-rata: Rp {{ Number(dashboard.today.avg_transaction).toLocaleString() }}
+          </p>
+        </div>
+
         <!-- Hari ini -->
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
           <h3 class="text-sm font-medium">Transaksi Hari Ini</h3>
@@ -126,14 +139,20 @@ const fetchTransaction = async (id: number) => {
           <p class="text-2xl font-bold">
             Rp {{ Number(dashboard.today.total_sales).toLocaleString() }}
           </p>
-        </div>
 
-        <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
-          <h3 class="text-sm font-medium">Item Terjual Hari Ini</h3>
-          <p class="text-2xl font-bold mt-2">{{ dashboard.today.total_items }}</p>
-          <p class="text-sm text-gray-400">
-            Rata-rata: Rp {{ Number(dashboard.today.avg_transaction).toLocaleString() }}
-          </p>
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Tunai</h3>
+            <p class="text-2xl font-bold mt-2">
+              Rp {{ Number(dashboard.today.payment.cash).toLocaleString() }}
+            </p>
+          </div>
+
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Non Tunai</h3>
+            <p class="text-2xl font-bold mt-2 text-red-400">
+              Rp {{ Number(dashboard.today.payment.noncash).toLocaleString() }}
+            </p>
+          </div>
         </div>
 
         <!-- Mingguan -->
@@ -145,6 +164,20 @@ const fetchTransaction = async (id: number) => {
           <p class="text-2xl font-bold">
             Rp {{ Number(dashboard.week.total_sales).toLocaleString() }}
           </p>
+
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Tunai</h3>
+            <p class="text-2xl font-bold mt-2">
+              Rp {{ Number(dashboard.week.payment.cash).toLocaleString() }}
+            </p>
+          </div>
+
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Non Tunai</h3>
+            <p class="text-2xl font-bold mt-2 text-red-400">
+              Rp {{ Number(dashboard.week.payment.noncash).toLocaleString() }}
+            </p>
+          </div>
         </div>
 
         <!-- Bulanan -->
@@ -156,6 +189,20 @@ const fetchTransaction = async (id: number) => {
           <p class="text-2xl font-bold">
             Rp {{ Number(dashboard.month.total_sales).toLocaleString() }}
           </p>
+
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Tunai</h3>
+            <p class="text-2xl font-bold mt-2">
+              Rp {{ Number(dashboard.month.payment.cash).toLocaleString() }}
+            </p>
+          </div>
+
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Non Tunai</h3>
+            <p class="text-2xl font-bold mt-2 text-red-400">
+              Rp {{ Number(dashboard.month.payment.noncash).toLocaleString() }}
+            </p>
+          </div>
         </div>
 
         <!-- All Time -->
@@ -167,21 +214,20 @@ const fetchTransaction = async (id: number) => {
           <p class="text-2xl font-bold">
             Rp {{ Number(dashboard.alltime.total_sales).toLocaleString() }}
           </p>
-        </div>
 
-        <!-- Rasio Tunai / Non Tunai -->
-        <div class="bg-gray-900 border-b-4 border-green-400 p-4 shadow text-white">
-          <h3 class="text-sm font-medium">Pembayaran Hari Ini</h3>
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Tunai</h3>
+            <p class="text-2xl font-bold mt-2">
+              Rp {{ Number(dashboard.alltime.payment.cash).toLocaleString() }}
+            </p>
+          </div>
 
-          <p class="text-sm mt-2 text-green-400">Tunai: {{ dashboard.today.total_cash }} trx</p>
-          <p class="text-xs text-green-300">Rp {{ Number(dashboard.today.total_cash_sales).toLocaleString() }}</p>
-
-          <p class="text-sm mt-1 text-red-400">Non Tunai: {{ dashboard.today.total_non_cash }} trx</p>
-          <p class="text-xs text-red-300">Rp {{ Number(dashboard.today.total_non_cash_sales).toLocaleString() }}</p>
-
-          <p class="text-xs mt-2 text-gray-400">
-            Rasio Tunai: {{ dashboard.today.cash_ratio }}% • Non Tunai: {{ dashboard.today.non_cash_ratio }}%
-          </p>
+          <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow text-white">
+            <h3 class="text-sm font-medium">Non Tunai</h3>
+            <p class="text-2xl font-bold mt-2 text-red-400">
+              Rp {{ Number(dashboard.alltime.payment.noncash).toLocaleString() }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -260,6 +306,7 @@ const fetchTransaction = async (id: number) => {
         <p><strong>Customer:</strong> {{ detailTrx.customer_name || '-' }}</p>
         <p><strong>Total:</strong> Rp {{ Number(detailTrx.grand_total).toLocaleString() }}</p>
         <p><strong>Status:</strong> {{ detailTrx.status }}</p>
+        <p><strong>Pembayaran:</strong> {{ detailTrx.payment_method == 'cash' ? 'Tunai' : 'Non Tunai' }}</p>
 
         <h3 class="mt-4 font-semibold">Items</h3>
         <table class="w-full text-sm mt-2 border border-gray-700">
