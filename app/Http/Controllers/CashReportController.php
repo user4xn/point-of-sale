@@ -15,11 +15,17 @@ class CashReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to   = $request->get('to', now()->endOfMonth()->toDateString());
 
-        $registers = CashRegister::with('user')
+        $registers = CashRegister::with(['user', 'bankTransactions'])
             ->whereBetween('opened_at', [$from, $to])
             ->orderByDesc('opened_at')
             ->paginate(10)
             ->withQueryString();
+
+        foreach ($registers as $r) {
+           $r->total_amount_noncash = $r->bankTransactions->sum(fn($t) => $t->amount);
+           $r->total_sales_noncash = count($r->bankTransactions);
+           $r->total_all_amount = $r->total_amount + $r->total_amount_noncash;
+        }
 
         // Metrics
         $all = CashRegister::whereBetween('opened_at', [$from, $to])->get();

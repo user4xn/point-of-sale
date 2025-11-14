@@ -12,6 +12,7 @@ use App\Models\CashRegister;
 use App\Models\Customer;
 use App\Models\ProductUnitConversion;
 use App\Models\CashRegisterTransaction;
+use App\Models\BankTransaction;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -214,14 +215,14 @@ class TransactionController extends Controller
                 }
 
                 $conversionQty = 1;
-                $price = $product->sell_price; // default harga jual product
+                $price = $product->sell_price;
                 $uc = null;
 
                 if (!empty($item['unit_conversion_id'])) {
                     $uc = ProductUnitConversion::find($item['unit_conversion_id']);
                     if ($uc) {
                         $conversionQty = $uc->conversion;
-                        $price = $uc->sell_price; // pakai harga jual konversi
+                        $price = $uc->sell_price;
                     }
                 }
 
@@ -235,7 +236,6 @@ class TransactionController extends Controller
                     ], 422);
                 }
 
-                // Kurangi stok berdasarkan konversi
                 $product->decrement('stock', $deductStock);
 
                 TransactionItem::create([
@@ -257,13 +257,21 @@ class TransactionController extends Controller
                 }
             }
 
-            $cashRegister->increment('total_sales');
-            $cashRegister->increment('total_amount', $grandTotal);
+            if ($request->payment_method === 'cash') {
+              $cashRegister->increment('total_sales');
+              $cashRegister->increment('total_amount', $grandTotal);
 
-            CashRegisterTransaction::create([
-                'cash_register_id' => $cashRegister->id,
-                'transaction_id'   => $trx->id,
-            ]);
+              CashRegisterTransaction::create([
+                  'cash_register_id' => $cashRegister->id,
+                  'transaction_id'   => $trx->id,
+              ]);   
+            } else {
+              $bankTransaction = BankTransaction::create([
+                  'cash_register_id' => $cashRegister->id,
+                  'transaction_id'   => $trx->id,
+                  'amount'           => $grandTotal,
+              ]);
+            }
 
             DB::commit();
 

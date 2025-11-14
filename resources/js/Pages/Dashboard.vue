@@ -216,6 +216,12 @@ const apps = ref([
           <h3 class="text-sm font-medium relative">Kas Saat Ini</h3>
           <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_cash).toLocaleString() }}</p>
         </div>
+
+        <!-- Bank Saat Ini -->
+        <div class="relative bg-gray-800 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
+          <h3 class="text-sm font-medium relative">Kas Non Tunai Hari Ini</h3>
+          <p class="text-2xl font-bold mt-2 relative">Rp {{ Number(dashboard.current_bank).toLocaleString() }}</p>
+        </div>
       </div>
 
       <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">

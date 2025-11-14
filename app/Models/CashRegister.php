@@ -24,6 +24,10 @@ class CashRegister extends Model
         return $this->hasMany(CashRegisterTransaction::class);
     }
 
+    public function bankTransactions() {
+        return $this->hasMany(BankTransaction::class);
+    }
+
     public function transactions() {
         return $this->belongsToMany(Transaction::class, 'cash_register_transactions');
     }

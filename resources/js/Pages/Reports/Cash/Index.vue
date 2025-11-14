@@ -87,7 +87,7 @@ const handleExport = () => {
       </div>
 
       <p class="text-sm mb-2 text-gray-400">
-        *Kas Akhir - Total Kas = 0, Jika tidak maka terdapat selisih +/-.
+        *Selisih (- *jika ada) kas akan muncul ketika kas sudah tertutup, non tunai tidak masuk hitungan selisih.
       </p>
 
       <!-- Table -->
@@ -96,14 +96,14 @@ const handleExport = () => {
           <tr class="bg-gray-600/50">
             <th class="p-2">#</th>
             <th class="p-2">Kasir</th>
-            <th class="p-2">Kas Awal</th>
-            <th class="p-2">Kas Akhir</th>
+            <th class="p-2">Input Kas Awal</th>
+            <th class="p-2">Input Kas Akhir</th>
+            <th class="p-2">Total Transaksi</th>
+            <th class="p-2">Penjualan Masuk</th>
+            <th class="p-2">Selisih Kas</th>
             <th class="p-2">Total Penjualan</th>
-            <th class="p-2">Total Kas</th>
-            <th class="p-2">Selisih</th>
             <th class="p-2">Keterangan</th>
-            <th class="p-2">Buka Kas</th>
-            <th class="p-2">Tutup Kas</th>
+            <th class="p-2">Buka/Tutup Kas</th>
             <th class="p-2">Status</th>
           </tr>
         </thead>
@@ -113,18 +113,38 @@ const handleExport = () => {
             <td class="p-2">{{ r.user?.name }}</td>
             <td class="p-2">Rp {{ Number(r.opening_amount).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(r.closing_amount).toLocaleString() }}</td>
-            <td class="p-2">{{ parseInt(r.total_sales) }}</td>
-            <td class="p-2">Rp {{ Number(r.total_amount).toLocaleString() }}</td>
-            <td class="p-2 text-right" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) < 0 ? 'text-red-400' : 'text-green-400'">
-              Rp {{ Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)).toLocaleString() }}
+            <td class="p-2">
+              Tunai: {{ parseInt(r.total_sales) }}
+              <div class="text-gray-400 text-sm">
+                Non Tunai: {{ parseInt(r.total_sales_noncash) }}
+              </div>
             </td>
+            <td class="p-2">
+              Tunai: Rp {{ Number(r.total_amount).toLocaleString() }}
+              <div class="text-gray-400 text-sm">
+                Non Tunai: Rp {{ Number(r.total_amount_noncash).toLocaleString() }}
+              </div>
+            </td>
+            <td class="p-2" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) < 0 ? 'text-red-400' : 'text-green-400'">
+              <div v-if="r.status === 'closed'">
+                Rp {{ Number(Math.min((r.closing_amount ?? 0) - (r.total_amount ?? 0), 0)).toLocaleString() }}
+              </div>
+              <div v-else>
+                
+              </div>
+            </td>
+            <td>Rp {{ Number((r.total_all_amount ?? 0)).toLocaleString() }}</td>
             <td class="p-2">
               <span v-if="r.status === 'open'" class="text-yellow-400">Belum Ditutup</span>
               <span v-else-if="r.closed_at && new Date(r.closed_at).getTime() - new Date(r.opened_at).getTime() > 86400000" class="text-red-400">Terlambat</span>
               <span v-else class="text-green-400">Tepat Waktu</span>
             </td>
-            <td class="p-2">{{ new Date(r.opened_at).toLocaleString() }}</td>
-            <td class="p-2">{{ r.closed_at ? new Date(r.closed_at).toLocaleString() : '-' }}</td>
+            <td class="p-2 text-sm">
+              {{ new Date(r.opened_at).toLocaleString() }}
+              <div class="text-gray-400">
+                {{ r.closed_at ? new Date(r.closed_at).toLocaleString() : '-' }}
+              </div>
+            </td>
             <td class="p-2">
               <span :class="r.status === 'open' ? 'text-green-400' : 'text-red-400'">
                 {{ r.status }}
