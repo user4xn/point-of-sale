@@ -34,6 +34,7 @@ class SalesHeaderExport implements FromCollection, WithHeadings, WithTitle
                     $trx->created_at->format('Y-m-d H:i'),
                     $trx->user->name ?? '-',
                     $trx->customer_name ?? '-',
+                    $trx->payment_method == 'cash' ? 'Tunai' : 'Non Tunai',
                     $trx->total_price,
                     $trx->discount,
                     $trx->tax,
@@ -48,7 +49,7 @@ class SalesHeaderExport implements FromCollection, WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-          'Invoice', 'Tanggal', 'Kasir', 'Customer',
+          'Invoice', 'Tanggal', 'Kasir', 'Customer', 'Metode Bayar',
           'Total', 'Diskon', 'Pajak', 'Grand Total',
           'Dibayar', 'Kembali', 'Status'
         ];

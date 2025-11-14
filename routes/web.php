@@ -16,6 +16,7 @@ use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\ProductReportController;
 use App\Http\Controllers\CashReportController;
 use App\Http\Controllers\PurchaseReportController;
+use App\Http\Controllers\BankReportController;
 use App\Http\Controllers\StockOpnameReportController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\QzSignController;
@@ -93,6 +94,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/cash', [CashReportController::class, 'index'])->name('cash.index');
         Route::get('/cash/export', [CashReportController::class, 'export'])->name('cash.export');
+
+        Route::get('/bank', [BankReportController::class, 'index'])->name('bank.index');
 
         Route::get('/purchase', [PurchaseReportController::class, 'index'])->name('purchase.index');
         Route::get('/purchase/{id}/detail', [PurchaseReportController::class, 'detail'])->name('purchase.detail');

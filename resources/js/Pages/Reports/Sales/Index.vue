@@ -111,6 +111,7 @@ watch([from, to, cashier], () => {
             <th class="p-2">Tanggal</th>
             <th class="p-2">Kasir</th>
             <th class="p-2">Customer</th>
+            <th class="p-2">Metode Bayar</th>
             <th class="p-2">Grand Total</th>
             <th class="p-2">Status</th>
           </tr>
@@ -126,6 +127,7 @@ watch([from, to, cashier], () => {
             <td class="p-2">{{ new Date(trx.created_at).toLocaleString() }}</td>
             <td class="p-2">{{ trx.user?.name }}</td>
             <td class="p-2">{{ trx.customer_name || '-' }}</td>
+            <td class="p-2 font-mono" :class="trx.payment_method === 'cash' ? 'text-green-400' : 'text-red-400'">{{ trx.payment_method == 'cash' ? 'Tunai' : 'Non Tunai' }}</td>
             <td class="p-2">Rp {{ Number(trx.grand_total).toLocaleString() }}</td>
             <td class="p-2">
               <span :class="trx.status === 'paid' ? 'text-green-400' : 'text-red-400'">
