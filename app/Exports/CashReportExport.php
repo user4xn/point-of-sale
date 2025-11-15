@@ -33,16 +33,16 @@ class CashReportExport implements FromCollection, WithHeadings
                 }
 
                 return [
-                    'Kasir'          => $r->user?->name,
-                    'Kas Awal'       => $r->opening_amount,
-                    'Kas Akhir'      => $r->closing_amount,
-                    'Total Penjualan'=> $r->total_sales,
-                    'Total Kas'      => $r->total_amount,
-                    'Selisih'        => $selisih,
-                    'Keterangan'     => $keterangan,
-                    'Status'         => $r->status,
-                    'Buka Kas'       => $r->opened_at,
-                    'Tutup Kas'      => $r->closed_at,
+                    'Kasir'             => $r->user?->name,
+                    'Kas Awal'          => $r->opening_amount,
+                    'Kas Akhir'         => $r->closing_amount,
+                    'Jumlah Penjualan'  => $r->total_sales,
+                    'Total Penjualan'   => $r->total_amount,
+                    'Selisih'           => $selisih,
+                    'Keterangan'        => $keterangan,
+                    'Status'            => $r->status,
+                    'Buka Kas'          => $r->opened_at,
+                    'Tutup Kas'         => $r->closed_at,
                 ];
             });
     }
@@ -53,8 +53,8 @@ class CashReportExport implements FromCollection, WithHeadings
             'Kasir',
             'Kas Awal',
             'Kas Akhir',
+            'Jumalah Penjualan',
             'Total Penjualan',
-            'Total Kas',
             'Selisih',
             'Keterangan',
             'Status',

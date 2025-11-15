@@ -125,9 +125,9 @@ const handleExport = () => {
                 Non Tunai: Rp {{ Number(r.total_amount_noncash).toLocaleString() }}
               </div>
             </td>
-            <td class="p-2" :class="Number((r.closing_amount ?? 0) - (r.total_amount ?? 0)) < 0 ? 'text-red-400' : 'text-green-400'">
+            <td class="p-2" :class="Number((r.selisih_amount)) < 0 ? 'text-red-400' : 'text-green-400'">
               <div v-if="r.status === 'closed'">
-                Rp {{ Number(Math.min((r.closing_amount ?? 0) - (r.total_amount ?? 0), 0)).toLocaleString() }}
+                {{ Number(Math.min(r.selisih_amount, 0)).toLocaleString() }}
               </div>
               <div v-else>
                 

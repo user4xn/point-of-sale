@@ -25,6 +25,8 @@ class CashReportController extends Controller
            $r->total_amount_noncash = $r->bankTransactions->sum(fn($t) => $t->amount);
            $r->total_sales_noncash = count($r->bankTransactions);
            $r->total_all_amount = $r->total_amount + $r->total_amount_noncash;
+
+           $r->selisih_amount = $r->closing_amount - ($r->opening_amount + $r->total_amount);
         }
 
         // Metrics
@@ -32,13 +34,13 @@ class CashReportController extends Controller
 
         $metrics = [
             'total_selisih' => $all->filter(fn($r) => $r->closing_amount !== null && $r->closing_amount != $r->total_amount)->count(),
-            'amount_selisih' => $all->sum(fn($r) => abs(($r->closing_amount ?? 0) - ($r->total_amount ?? 0))),
+            'amount_selisih' => $all->sum(fn($r) => abs(($r->closing_amount ?? 0) - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
             'selisih_bulan' => $all->whereBetween('opened_at', [now()->startOfMonth(), now()->endOfMonth()])
-                ->sum(fn($r) => abs(($r->closing_amount ?? 0) - ($r->total_amount ?? 0))),
+                ->sum(fn($r) => abs(($r->closing_amount ?? 0) - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
             'late_close' => $all->filter(fn($r) =>
                 $r->status === 'closed' &&
                 $r->closed_at &&
-                $r->closed_at->diffInDays($r->opened_at) > 1
+                (date('Y-m-d', strtotime($r->closed_at)) != date('Y-m-d', strtotime($r->opened_at)))
             )->count(),
         ];
 
