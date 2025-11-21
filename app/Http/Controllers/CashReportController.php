@@ -43,7 +43,7 @@ class CashReportController extends Controller
                 (date('Y-m-d', strtotime($r->closed_at)) != date('Y-m-d', strtotime($r->opened_at)))
             )->count(),
         ];
-
+        
         return Inertia::render('Reports/Cash/Index', [
             'registers' => $registers,
             'filters' => ['from' => $from, 'to' => $to],

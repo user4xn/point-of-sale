@@ -25,6 +25,11 @@ const handleFilter = () => {
 const handleExport = () => {
   window.open(route('reports.cash.export', { from: from.value, to: to.value }), '_blank')
 }
+
+const toYMD = (dateString: string) => {
+  const d = new Date(dateString);
+  return d.toISOString().split("T")[0];
+}
 </script>
 
 <template>
@@ -136,7 +141,7 @@ const handleExport = () => {
             <td>Rp {{ Number((r.total_all_amount ?? 0)).toLocaleString() }}</td>
             <td class="p-2">
               <span v-if="r.status === 'open'" class="text-yellow-400">Belum Ditutup</span>
-              <span v-else-if="r.closed_at && new Date(r.closed_at).getTime() - new Date(r.opened_at).getTime() > 86400000" class="text-red-400">Terlambat</span>
+              <span v-else-if="toYMD(r.closed_at) !== toYMD(r.opened_at)" class="text-red-400">Terlambat</span>
               <span v-else class="text-green-400">Tepat Waktu</span>
             </td>
             <td class="p-2 text-sm">
