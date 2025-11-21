@@ -22,7 +22,7 @@ class TransactionController extends Controller
 {
     public function index(Request $request)
     {
-      $query = Transaction::with('user')
+      $query = Transaction::with(['user', 'cashRegister'])
         ->when($request->search, fn($q) =>
             $q->where('invoice_number', 'like', "%{$request->search}%")
         )

@@ -248,6 +248,7 @@ const fetchTransaction = async (id: number) => {
             <th class="p-2 text-start">#</th>
             <th class="p-2 text-start">Invoice</th>
             <th class="p-2 text-start">Metode Bayar</th>
+            <th class="p-2 text-start">Data Kas</th>
             <th class="p-2 text-start">Tanggal</th>
             <th class="p-2 text-start">Kasir</th>
             <th class="p-2 text-start">Customer</th>
@@ -266,6 +267,14 @@ const fetchTransaction = async (id: number) => {
             <td class="p-2">{{ props.transactions.from + i }}</td>
             <td class="p-2 font-mono">{{ trx.invoice_number }}</td>
             <td class="p-2 font-mono" :class="trx.payment_method === 'cash' ? 'text-green-400' : 'text-red-400'">{{ trx.payment_method == 'cash' ? 'Tunai' : 'Non Tunai' }}</td>
+            <td class="p-2">
+              <span 
+                class="p-2 bg-white/10 font-bold rounded-full"
+               :class="trx.cash_register.id % 2 === 0 ? 'text-blue-400' : 'text-red-400'"
+              >
+                #{{ trx.cash_register.id }}
+              </span>
+            </td>
             <td class="p-2">{{ new Date(trx.created_at).toLocaleString() }}</td>
             <td class="p-2">{{ trx.user?.name }}</td>
             <td class="p-2">{{ trx.customer_name || '-' }}</td>

@@ -100,7 +100,7 @@ const toYMD = (dateString: string) => {
         <thead>
           <tr class="bg-gray-600/50">
             <th class="p-2">#</th>
-            <th class="p-2">Kasir</th>
+            <th class="p-2">ID/Kasir</th>
             <th class="p-2">Input Kas Awal</th>
             <th class="p-2">Input Kas Akhir</th>
             <th class="p-2">Total Transaksi</th>
@@ -115,7 +115,12 @@ const toYMD = (dateString: string) => {
         <tbody>
           <tr v-for="(r,i) in props.registers.data" :key="r.id" class="hover:bg-white/10 transition">
             <td class="p-2">{{ props.registers.from + i }}</td>
-            <td class="p-2">{{ r.user?.name }}</td>
+            <td class="p-2">
+              <span class="p-2 bg-white/10 font-bold rounded-full">
+                #{{ r.id }}
+              </span>
+              {{ r.user?.name }}
+            </td>
             <td class="p-2">Rp {{ Number(r.opening_amount).toLocaleString() }}</td>
             <td class="p-2">Rp {{ Number(r.closing_amount).toLocaleString() }}</td>
             <td class="p-2">
@@ -145,9 +150,9 @@ const toYMD = (dateString: string) => {
               <span v-else class="text-green-400">Tepat Waktu</span>
             </td>
             <td class="p-2 text-sm">
-              {{ new Date(r.opened_at).toLocaleString() }}
+              {{ toYMD(r.opened_at) }}
               <div class="text-gray-400">
-                {{ r.closed_at ? new Date(r.closed_at).toLocaleString() : '-' }}
+                {{ r.closed_at ? toYMD(r.closed_at).toLocaleString() : '-' }}
               </div>
             </td>
             <td class="p-2">
