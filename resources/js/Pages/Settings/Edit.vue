@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { inject, ref, onMounted } from 'vue'
-import { buildReceipt } from '@/utils/print-formatter'
+import PrinterStatus from '@/Components/PrinterStatus.vue'
 
 interface Setting {
   store_name: string
@@ -39,89 +38,6 @@ const renderTemplate = () => {
     .replace(/\[store_address\]/g, form.store_address || '[Alamat]')
     .replace(/\[store_contact\]/g, form.store_contact || '[Kontak]')
 }
-
-const $swal = inject('swal') as any
-const printTesting = ref(false)
-
-const testPrint = async () => {
-  if (printTesting.value) return
-  printTesting.value = true
-  try {
-    if (!qz.websocket.isActive()) {
-      await qz.websocket.connect()
-    }
-
-    const content = buildReceipt({
-      store_name: form.store_name || 'NAMA TOKO',
-      store_address: form.store_address || 'Alamat Toko',
-      store_contact: form.store_contact || 'Kontak',
-      invoice: 'TEST-PRINT',
-      date: new Date().toLocaleString('id-ID'),
-      cashier: 'Test Print',
-      items: [
-        { name: 'Produk Contoh A', qty: '1 pcs', unit: 'pcs', price: 10000, subtotal: 10000 },
-        { name: 'Produk Contoh B', qty: '2 pcs', unit: 'pcs', price: 5000, subtotal: 10000 },
-      ],
-      total_price: 20000,
-      discount: 0,
-      tax: 0,
-      grand_total: 20000,
-      paid_amount: 50000,
-      change_amount: 30000,
-      footer: form.receipt_template || 'Terima kasih telah berbelanja',
-    })
-
-    let printer = await qz.printers.getDefault()
-    if (!printer) {
-      const printers = await qz.printers.find()
-      printer = printers[0]
-    }
-    if (!printer) {
-      throw new Error('Printer tidak ditemukan. Pastikan QZ Tray berjalan dan printer thermal terpasang.')
-    }
-
-    const config = qz.configs.create(printer)
-    await qz.print(config, [content])
-    $swal.fire('Berhasil', 'Struk test berhasil dikirim ke printer', 'success')
-  } catch (e: any) {
-    $swal.fire('Gagal', 'Test print gagal: ' + (e?.message || 'QZ Tray tidak terhubung'), 'error')
-  } finally {
-    printTesting.value = false
-  }
-}
-
-const qzConnected = ref(false)
-const printerName = ref<string | null>(null)
-const checking = ref(false)
-
-const checkQz = async () => {
-  checking.value = true
-  try {
-    if (!qz.websocket.isActive()) {
-      await qz.websocket.connect()
-    }
-    qzConnected.value = qz.websocket.isActive()
-
-    let printer: string | null = null
-    try {
-      printer = await qz.printers.getDefault()
-      if (!printer) {
-        const printers = await qz.printers.find()
-        printer = Array.isArray(printers) ? printers[0] ?? null : printers ?? null
-      }
-    } catch {
-      printer = null
-    }
-    printerName.value = printer
-  } catch {
-    qzConnected.value = false
-    printerName.value = null
-  } finally {
-    checking.value = false
-  }
-}
-
-onMounted(checkQz)
 </script>
 
 <template>
@@ -141,24 +57,14 @@ onMounted(checkQz)
     </template>
 
     <div class="flex flex-wrap gap-3 p-1">
-      <!-- Status Printer (QZ Tray) -->
-      <div class="w-full p-4 bg-gray-800/50 rounded border border-gray-700">
-        <div class="flex flex-wrap items-center gap-3">
-          <h3 class="font-semibold text-white mr-2">Status Printer</h3>
-          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium" :class="qzConnected ? 'bg-green-600/20 text-green-300' : 'bg-red-600/20 text-red-300'">
-            <span class="size-2 rounded-full" :class="qzConnected ? 'bg-green-400' : 'bg-red-400'"></span>
-            QZ Tray: {{ checking ? 'Mengecek…' : (qzConnected ? 'Terhubung' : 'Tidak terhubung') }}
-          </span>
-          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium" :class="printerName ? 'bg-green-600/20 text-green-300' : 'bg-yellow-600/20 text-yellow-300'">
-            <span class="size-2 rounded-full" :class="printerName ? 'bg-green-400' : 'bg-yellow-400'"></span>
-            Printer: {{ printerName || 'Tidak terdeteksi' }}
-          </span>
-          <button type="button" @click="checkQz" :disabled="checking" class="ml-auto px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition">
-            {{ checking ? 'Mengecek…' : 'Cek Ulang' }}
-          </button>
-        </div>
-        <p class="text-xs text-gray-400 mt-2">Pastikan QZ Tray berjalan di komputer ini dan printer thermal sudah terpasang &amp; terdeteksi.</p>
-      </div>
+      <PrinterStatus
+        :store="{
+          store_name: form.store_name,
+          store_address: form.store_address,
+          store_contact: form.store_contact,
+          receipt_template: form.receipt_template,
+        }"
+      />
 
       <form @submit.prevent="submit" class="space-y-5 flex-1 p-4">
         <!-- Store Name -->
@@ -232,25 +138,13 @@ onMounted(checkQz)
         </div>
   
         <!-- Save Button -->
-        <div class="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-600/80 font-semibold transition ease-in-out text-white rounded"
-            :disabled="form.processing"
-          >
-            Simpan
-          </button>
-          <button
-            type="button"
-            @click="testPrint"
-            class="px-4 py-2 bg-green-600 hover:bg-green-600/80 font-semibold transition ease-in-out text-white rounded inline-flex items-center gap-2"
-            :disabled="printTesting"
-          >
-            <svg v-if="!printTesting" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659" /></svg>
-            <span v-if="printTesting" class="inline-block animate-spin size-5 border-2 border-white border-t-transparent rounded-full"></span>
-            {{ printTesting ? 'Mencetak...' : 'Test Print' }}
-          </button>
-        </div>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-600/80 font-semibold transition ease-in-out text-white rounded"
+          :disabled="form.processing"
+        >
+          Simpan
+        </button>
       </form>
 
       <!-- Receipt Preview -->

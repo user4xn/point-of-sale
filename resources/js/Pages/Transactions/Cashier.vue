@@ -8,6 +8,7 @@ import AfterPayModal from '@/Components/AfterPayModal.vue'
 import { CartItem } from '@/types'
 
 import { buildReceipt } from '@/utils/print-formatter'
+import PrinterStatus from '@/Components/PrinterStatus.vue'
 
 const props = defineProps<{
   settings: any
@@ -445,6 +446,11 @@ const paymentBank = () => {
         {{ now.toLocaleDateString() }} <br />
         <span class="text-4xl font-bold">{{ now.toLocaleTimeString() }}</span>
       </div>
+    </div>
+
+    <!-- PRINTER STATUS -->
+    <div class="px-4 py-2 bg-gray-800 border-b border-gray-700">
+      <PrinterStatus :store="settings" compact />
     </div>
 
     <!-- BODY -->
