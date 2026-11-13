@@ -111,7 +111,7 @@ const subtotal = computed(() =>
   cart.value.reduce((t, i) => t + i.price * i.quantity, 0)
 )
 const tax = computed(() =>
-  (subtotal.value * (props.settings.tax_rate || 0)) / 100
+  (subtotal.value * (props.settings?.tax_rate || 0)) / 100
 )
 const grandTotal = computed(() => 
   subtotal.value + tax.value
@@ -578,7 +578,7 @@ const paymentBank = () => {
                 <span class="font-bold">Rp{{ subtotal.toLocaleString() }}</span>
               </div>
               <div class="flex gap-2 justify-between">
-                <span>Pajak ({{ props.settings.tax_rate }}%)</span>
+                <span>Pajak ({{ props.settings?.tax_rate }}%)</span>
                 <span class="font-bold">Rp{{ tax.toLocaleString() }}</span>
               </div>
               <div class="flex gap-2 justify-between">

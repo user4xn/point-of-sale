@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Setting;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use RuntimeException;
@@ -14,6 +15,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (!Setting::exists()) {
+            Setting::create([
+                'store_name' => 'Toko Saya',
+                'store_address' => '',
+                'store_contact' => '',
+                'receipt_template' => 'Terima kasih telah berbelanja di [store_name]',
+                'tax_rate' => 0,
+            ]);
+        }
+
         $email = 'elmannafadmin@yopmail.com';
 
         if (User::where('email', $email)->exists()) {
