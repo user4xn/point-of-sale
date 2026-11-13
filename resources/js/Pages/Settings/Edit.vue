@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { inject, ref } from 'vue'
+import { inject, ref, onMounted } from 'vue'
 import { buildReceipt } from '@/utils/print-formatter'
 
 interface Setting {
@@ -89,6 +89,39 @@ const testPrint = async () => {
     printTesting.value = false
   }
 }
+
+const qzConnected = ref(false)
+const printerName = ref<string | null>(null)
+const checking = ref(false)
+
+const checkQz = async () => {
+  checking.value = true
+  try {
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect()
+    }
+    qzConnected.value = qz.websocket.isActive()
+
+    let printer: string | null = null
+    try {
+      printer = await qz.printers.getDefault()
+      if (!printer) {
+        const printers = await qz.printers.find()
+        printer = Array.isArray(printers) ? printers[0] ?? null : printers ?? null
+      }
+    } catch {
+      printer = null
+    }
+    printerName.value = printer
+  } catch {
+    qzConnected.value = false
+    printerName.value = null
+  } finally {
+    checking.value = false
+  }
+}
+
+onMounted(checkQz)
 </script>
 
 <template>
@@ -108,6 +141,25 @@ const testPrint = async () => {
     </template>
 
     <div class="flex flex-wrap gap-3 p-1">
+      <!-- Status Printer (QZ Tray) -->
+      <div class="w-full p-4 bg-gray-800/50 rounded border border-gray-700">
+        <div class="flex flex-wrap items-center gap-3">
+          <h3 class="font-semibold text-white mr-2">Status Printer</h3>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium" :class="qzConnected ? 'bg-green-600/20 text-green-300' : 'bg-red-600/20 text-red-300'">
+            <span class="size-2 rounded-full" :class="qzConnected ? 'bg-green-400' : 'bg-red-400'"></span>
+            QZ Tray: {{ checking ? 'Mengecek…' : (qzConnected ? 'Terhubung' : 'Tidak terhubung') }}
+          </span>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium" :class="printerName ? 'bg-green-600/20 text-green-300' : 'bg-yellow-600/20 text-yellow-300'">
+            <span class="size-2 rounded-full" :class="printerName ? 'bg-green-400' : 'bg-yellow-400'"></span>
+            Printer: {{ printerName || 'Tidak terdeteksi' }}
+          </span>
+          <button type="button" @click="checkQz" :disabled="checking" class="ml-auto px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition">
+            {{ checking ? 'Mengecek…' : 'Cek Ulang' }}
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Pastikan QZ Tray berjalan di komputer ini dan printer thermal sudah terpasang &amp; terdeteksi.</p>
+      </div>
+
       <form @submit.prevent="submit" class="space-y-5 flex-1 p-4">
         <!-- Store Name -->
         <div>
