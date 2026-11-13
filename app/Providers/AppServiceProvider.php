@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
+use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +27,7 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'flash' => fn () => session('flash', []),
         ]);
+
+        Gate::define('admin-only', fn (User $user) => $user->role === 'admin');
     }
 }
