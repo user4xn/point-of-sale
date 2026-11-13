@@ -19,6 +19,7 @@ class PurchaseReportController extends Controller
 
         $orders = PurchaseOrder::with(['supplier','items.product'])
             ->whereBetween('order_date', [$from, $to])
+            ->whereIn('status', ['completed', 'received'])
             ->orderBy('order_date','desc')
             ->paginate(15)
             ->withQueryString();
@@ -31,6 +32,7 @@ class PurchaseReportController extends Controller
         // Supplier stats
         $supplierStats = PurchaseOrder::selectRaw('supplier_id, COUNT(*) as total_po, SUM(total) as total_amount')
             ->whereBetween('order_date', [$from, $to])
+            ->whereIn('status', ['completed', 'received'])
             ->groupBy('supplier_id')
             ->with('supplier')
             ->orderByDesc('total_amount')
@@ -38,9 +40,9 @@ class PurchaseReportController extends Controller
             ->get();
 
         $metrics = [
-            'total_purchase' => $orders->sum('total'),
-            'total_return'   => $returns->sum('total'),
-            'supplier_count' => $orders->pluck('supplier_id')->unique()->count(),
+            'total_purchase' => PurchaseOrder::whereBetween('order_date', [$from, $to])->whereIn('status', ['completed', 'received'])->sum('total'),
+            'total_return'   => $returns->whereIn('status', ['completed'])->sum('total'),
+            'supplier_count' => PurchaseOrder::whereBetween('order_date', [$from, $to])->whereIn('status', ['completed', 'received'])->distinct('supplier_id')->count('supplier_id'),
             'po_count'       => $orders->total(),
             'top_suppliers'  => $supplierStats,
         ];

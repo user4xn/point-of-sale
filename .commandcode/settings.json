@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(php -l database/seeders/DemoDataSeeder.php)",
+      "Shell(php -r $stocks=array_fill(0,90,300); $count=0; for($d=89;$d>=0;$d--){for($n=0;$n<15+($d%6);$n++){ $count++; for($j=0;$j<1+($n%4);$j++){ $stocks[($d*7+$n*3+$j)%90]-=1+(($n+$j)%3); }} if($d%3===0){$stocks[$d%90]+=50;}} if(min($stocks)<0||$count!==1575){exit(1);} echo \"Simulation passed: $count sales; minimum stock \".min($stocks).PHP_EOL;)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

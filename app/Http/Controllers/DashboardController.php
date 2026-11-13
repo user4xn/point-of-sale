@@ -23,7 +23,7 @@ class DashboardController extends Controller
 
         $totalTransactions = $transactionsToday->count();
         $grossSales = $transactionsToday->sum('total_price');
-        $netSales   = $transactionsToday->sum('grand_total');
+        $netSales   = $transactionsToday->sum(fn ($transaction) => $transaction->total_price - $transaction->discount);
         $avgTransaction = $totalTransactions > 0
             ? round($netSales / $totalTransactions)
             : 0;
@@ -63,10 +63,20 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        $currentCash = $register ? $register->opening_amount + $paymentToday['cash'] : 0;
+        $currentCash = $register
+            ? $register->opening_amount + (clone $transactionsTodayQuery)
+                ->where('cash_register_id', $register->id)
+                ->where('payment_method', 'cash')
+                ->sum('grand_total')
+            : 0;
         $currentBank = $paymentToday['noncash'];
 
+        $ownerProps = Auth::user()?->role === 'admin'
+            ? ['owner_summary' => app(\App\Services\OwnerSummary::class)->metrics()]
+            : [];
+
         return Inertia::render('Dashboard', [
+            ...$ownerProps,
             'dashboard' => [
                 'total_transactions' => $totalTransactions,
                 'gross_sales' => $grossSales,

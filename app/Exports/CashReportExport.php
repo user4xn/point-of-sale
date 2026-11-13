@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\CashRegister;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -20,7 +21,7 @@ class CashReportExport implements FromCollection, WithHeadings
     public function collection()
     {
         return CashRegister::with(['user'])
-            ->whereBetween('opened_at', [$this->from, $this->to])
+            ->whereBetween('opened_at', [Carbon::parse($this->from)->startOfDay(), Carbon::parse($this->to)->endOfDay()])
             ->get()
             ->map(function($r) {
                 $selisih = ($r->closing_amount ?? 0) - ($r->total_amount ?? 0);

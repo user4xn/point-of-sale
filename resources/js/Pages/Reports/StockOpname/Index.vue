@@ -5,7 +5,7 @@ import { ref, watch } from 'vue'
 
 const props = defineProps<{
   filters: { from: string, to: string },
-  metrics: { total_opname: number, total_items: number, total_loss: number, total_note: number },
+  metrics: { total_opname: number, total_items: number, total_loss: number, total_shortage?: number, total_surplus?: number, total_note: number },
   opnames: any
 }>()
 
@@ -66,7 +66,7 @@ watch([from, to], ([f, t]) => {
       </div>
 
       <!-- Metrics -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
           <h3 class="text-sm font-medium">Total Opname</h3>
           <p class="text-2xl font-bold mt-1">{{ metrics.total_opname }}</p>
@@ -78,9 +78,14 @@ watch([from, to], ([f, t]) => {
           <p class="text-sm">Semua produk yang diopname</p>
         </div>
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
-          <h3 class="text-sm font-medium">Total Selisih</h3>
-          <p class="text-2xl font-bold mt-1">{{ metrics.total_loss }}</p>
-          <p class="text-sm">Qty Sistem - Qty Fisik</p>
+          <h3 class="text-sm font-medium">Kekurangan</h3>
+          <p class="text-2xl font-bold mt-1">{{ metrics.total_shortage ?? metrics.total_loss }}</p>
+          <p class="text-sm">Qty sistem lebih besar dari fisik</p>
+        </div>
+        <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
+          <h3 class="text-sm font-medium">Kelebihan</h3>
+          <p class="text-2xl font-bold mt-1">{{ metrics.total_surplus ?? 0 }}</p>
+          <p class="text-sm">Qty fisik lebih besar dari sistem</p>
         </div>
         <div class="bg-gray-900 border-b-4 border-gray-500 p-4 shadow">
           <h3 class="text-sm font-medium">Item dengan Catatan</h3>

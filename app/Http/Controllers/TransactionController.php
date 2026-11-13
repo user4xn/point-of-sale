@@ -30,10 +30,10 @@ class TransactionController extends Controller
 
       $transactions = $query->paginate(10)->withQueryString();
 
-      $todayTrx = Transaction::whereDate('created_at', today());
-      $weekTrx = Transaction::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-      $monthTrx = Transaction::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
-      $allTrx = Transaction::query();
+      $todayTrx = Transaction::where('status', 'paid')->whereDate('created_at', today());
+      $weekTrx = Transaction::where('status', 'paid')->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+      $monthTrx = Transaction::where('status', 'paid')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+      $allTrx = Transaction::where('status', 'paid');
 
       $calcPayment = function ($baseQuery) {
           return [
@@ -92,7 +92,8 @@ class TransactionController extends Controller
 
     public function cashier()
     {
-        $cashRegister = CashRegister::whereNull('closed_at')
+        $cashRegister = CashRegister::where('user_id', auth()->id())
+            ->whereNull('closed_at')
             ->latest()
             ->first();
 
@@ -158,10 +159,42 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
-            $cashRegister = CashRegister::whereNull('closed_at')
+            $cashRegister = CashRegister::where('user_id', auth()->id())
+                ->whereNull('closed_at')
                 ->whereDate('opened_at', now()->toDateString())
                 ->latest()
+                ->lockForUpdate()
                 ->first();
+
+            if (!$cashRegister) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Kas belum dibuka hari ini'], 422);
+            }
+
+            $pricedItems = [];
+            foreach ($request->items as $item) {
+                $product = Product::with('unit')->lockForUpdate()->find($item['product_id']);
+                if (!$product) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan'], 422);
+                }
+                if ($product->status !== 'active') {
+                    throw new \RuntimeException("Produk {$product->name} tidak aktif");
+                }
+                $uc = null;
+                $conversionQty = 1;
+                $price = $product->sell_price;
+                if (!empty($item['unit_conversion_id'])) {
+                    $uc = ProductUnitConversion::where('id', $item['unit_conversion_id'])
+                        ->where('product_id', $product->id)->first();
+                    if (!$uc) {
+                        throw new \RuntimeException('Konversi unit tidak sesuai produk');
+                    }
+                    $conversionQty = $uc->conversion;
+                    $price = $uc->sell_price;
+                }
+                $pricedItems[] = compact('item', 'product', 'uc', 'conversionQty', 'price');
+            }
 
             if (!$cashRegister) {
                 return response()->json([
@@ -173,9 +206,15 @@ class TransactionController extends Controller
             $settings = Setting::first();
             $taxRate = $settings?->tax_rate ?? 0;
 
-            $total = collect($request->items)
-                ->sum(fn ($item) => $item['price'] * $item['quantity']);
+            $total = collect($pricedItems)
+                ->sum(fn ($priced) => $priced['price'] * $priced['item']['quantity']);
             $discount = $request->discount ?? 0;
+            if ($discount > $total) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Diskon tidak boleh melebihi total transaksi',
+                ], 422);
+            }
             $tax = ($total - $discount) * ($taxRate / 100);
             $grandTotal = $total - $discount + $tax;
             $change = $request->paid_amount - $grandTotal;
@@ -203,28 +242,12 @@ class TransactionController extends Controller
                 'payment_method'   => $request->payment_method,
             ]);
 
-            foreach ($request->items as $item) {
-                $product = Product::with('unit')->findOrFail($item['product_id']);
-
-                if ($product->status !== 'active') {
-                    DB::rollBack();
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Produk {$product->name} tidak aktif",
-                    ], 422);
-                }
-
-                $conversionQty = 1;
-                $price = $product->sell_price;
-                $uc = null;
-
-                if (!empty($item['unit_conversion_id'])) {
-                    $uc = ProductUnitConversion::find($item['unit_conversion_id']);
-                    if ($uc) {
-                        $conversionQty = $uc->conversion;
-                        $price = $uc->sell_price;
-                    }
-                }
+            foreach ($pricedItems as $priced) {
+                $item = $priced['item'];
+                $product = $priced['product'];
+                $uc = $priced['uc'];
+                $conversionQty = $priced['conversionQty'];
+                $price = $priced['price'];
 
                 $deductStock = $item['quantity'] * $conversionQty;
 

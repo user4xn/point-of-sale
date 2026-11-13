@@ -24,6 +24,7 @@ class PurchaseSummaryExport implements FromCollection, WithHeadings, WithTitle
     {
         $orders = PurchaseOrder::with('supplier')
             ->whereBetween('order_date', [$this->from, $this->to])
+            ->whereIn('status', ['completed', 'received'])
             ->get()
             ->map(function($o) {
                 return [

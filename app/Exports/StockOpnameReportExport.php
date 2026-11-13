@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\StockOpnameItem;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -20,7 +21,7 @@ class StockOpnameReportExport implements FromCollection, WithHeadings
     public function collection()
     {
         return StockOpnameItem::with(['opname.user','product'])
-            ->whereHas('opname', fn($q) => $q->whereBetween('created_at', [$this->from, $this->to]))
+            ->whereHas('opname', fn($q) => $q->whereBetween('created_at', [Carbon::parse($this->from)->startOfDay(), Carbon::parse($this->to)->endOfDay()]))
             ->get()
             ->map(fn($item) => [
                 'Tanggal Opname' => $item->opname->created_at->format('Y-m-d'),

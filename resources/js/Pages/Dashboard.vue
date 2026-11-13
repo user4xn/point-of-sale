@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import Modal from '@/Components/Modal.vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { inject, ref } from 'vue'
 
@@ -9,9 +10,26 @@ const role = page.props.auth.user?.role || 'cashier';
 
 const props = defineProps<{
   dashboard: any
+  owner_summary?: {
+    as_of: string
+    month_start: string
+    previous_start: string
+    previous_end: string
+    net_sales: number
+    previous_net_sales: number
+    change_percent: number | null
+    transactions: number
+    average_order_value: number
+    expenses: number
+    estimated_stock_value: number
+    trend: { date: string; net_sales: number }[]
+  }
 }>()
 
+const money = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 2 }).format(value)
+
 const dashboard = ref(props.dashboard)
+const showOwnerSummary = ref(false)
 
 const checkRegister = async () => {
   const res = await fetch(route('cash-register.check'))
@@ -162,6 +180,42 @@ const apps = ref([
 
     <div class="py-6">
       <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <button
+          v-if="role === 'admin' && owner_summary"
+          type="button"
+          class="mb-6 min-h-14 w-full rounded-md bg-red-700 px-6 py-4 text-lg font-bold text-white hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-400"
+          aria-haspopup="dialog"
+          :aria-expanded="showOwnerSummary"
+          @click="showOwnerSummary = true"
+        >
+          CEK RINGKASAN OWNER
+        </button>
+        <Modal v-if="role === 'admin' && owner_summary" :show="showOwnerSummary" max-width="2xl" @close="showOwnerSummary = false">
+        <section aria-labelledby="owner-summary-title" class="max-h-[80dvh] overflow-y-auto bg-gray-800 p-4 text-white sm:p-6">
+          <div class="flex items-center justify-between gap-4">
+            <h2 id="owner-summary-title" class="text-xl font-semibold">Ringkasan owner</h2>
+            <button type="button" autofocus class="min-h-11 px-4 py-2 font-bold text-gray-200 hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white" @click="showOwnerSummary = false">Tutup</button>
+          </div>
+          <p class="mt-2 text-sm text-gray-300">{{ owner_summary.month_start }} sampai {{ owner_summary.as_of }} (waktu aplikasi). Penjualan hanya transaksi paid, setelah diskon dan sebelum pajak.</p>
+          <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div><dt class="text-sm text-gray-300">Penjualan bersih bulan ini</dt><dd class="text-2xl font-semibold break-words">{{ money(owner_summary.net_sales) }}</dd></div>
+            <div><dt class="text-sm text-gray-300">Pengeluaran bulan ini</dt><dd class="text-2xl font-semibold break-words">{{ money(owner_summary.expenses) }}</dd></div>
+            <div><dt class="text-sm text-gray-300">Estimasi nilai persediaan</dt><dd class="text-2xl font-semibold break-words">{{ money(owner_summary.estimated_stock_value) }}</dd><dd class="text-sm text-gray-300">Stok × harga beli saat ini, bukan HPP historis.</dd></div>
+            <div><dt class="text-sm text-gray-300">Jumlah transaksi paid bulan ini</dt><dd class="text-2xl font-semibold">{{ owner_summary.transactions }}</dd></div>
+            <div><dt class="text-sm text-gray-300">Rata-rata penjualan bersih per transaksi</dt><dd class="text-2xl font-semibold break-words">{{ money(owner_summary.average_order_value) }}</dd></div>
+          </dl>
+          <p class="mt-4 text-sm text-gray-300">Pembanding {{ owner_summary.previous_start }} sampai {{ owner_summary.previous_end }} (hari dijepit ke akhir bulan): {{ money(owner_summary.previous_net_sales) }}.
+            <span v-if="owner_summary.change_percent !== null">Perubahan {{ owner_summary.change_percent > 0 ? '+' : '' }}{{ owner_summary.change_percent }}%.</span>
+            <span v-else>Persentase tidak tersedia karena penjualan periode pembanding nol atau negatif.</span>
+          </p>
+          <p class="mt-2 text-sm text-gray-300">Nilai ini bukan laba. Pengeluaran mengikuti tanggal pencatatan, bukan mutasi kas shift.</p>
+          <table class="mt-6 w-full text-sm">
+            <caption class="pb-2 text-left font-semibold">Tren penjualan bersih 14 hari, termasuk hari ini. Hari tanpa transaksi ditampilkan nol.</caption>
+            <thead><tr class="border-b border-gray-600"><th scope="col" class="py-2 text-left">Tanggal</th><th scope="col" class="py-2 text-right">Penjualan bersih</th></tr></thead>
+            <tbody><tr v-for="day in owner_summary.trend" :key="day.date" class="border-b border-gray-700"><th scope="row" class="py-2 text-left font-normal">{{ day.date }}</th><td class="py-2 text-right tabular-nums">{{ money(day.net_sales) }}</td></tr></tbody>
+          </table>
+        </section>
+        </Modal>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <Link
             v-for="app in apps"
@@ -237,7 +291,7 @@ const apps = ref([
         </div>
         <!-- Top Produk -->
         <div class="bg-blue-800/50 p-4 shadow text-white border-b-4 border-white/20 overflow-hidden">
-          <h3 class="text-sm font-medium">Top Produk (5 Besar)</h3>
+          <h3 class="text-sm font-medium">Top Produk (3 Besar)</h3>
           <ul class="mt-2 text-sm space-y-1">
             <li v-for="(p, i) in dashboard.top_products" :key="i" class="flex justify-between">
               <span>{{ i+1 }}. {{ p.name }}</span>

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -11,11 +12,13 @@ class SalesHeaderExport implements FromCollection, WithHeadings, WithTitle
 {
     protected $from;
     protected $to;
+    protected $cashier;
 
-    public function __construct($from, $to)
+    public function __construct($from, $to, $cashier = null)
     {
         $this->from = $from;
         $this->to   = $to;
+        $this->cashier = $cashier;
     }
 
     public function title(): string
@@ -26,7 +29,9 @@ class SalesHeaderExport implements FromCollection, WithHeadings, WithTitle
     public function collection()
     {
         return Transaction::with('user')
-            ->whereBetween('created_at', [$this->from, $this->to])
+            ->where('status', 'paid')
+            ->when($this->cashier, fn($q) => $q->where('user_id', $this->cashier))
+            ->whereBetween('created_at', [Carbon::parse($this->from)->startOfDay(), Carbon::parse($this->to)->endOfDay()])
             ->get()
             ->map(function ($trx) {
                 return [

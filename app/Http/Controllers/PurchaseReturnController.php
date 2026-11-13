@@ -33,7 +33,7 @@ class PurchaseReturnController extends Controller
         $metrics = [
             'total'     => PurchaseReturn::count(),
             'draft'     => PurchaseReturn::where('status', 'draft')->count(),
-            'confirmed' => PurchaseReturn::where('status', 'confirmed')->count(),
+            'confirmed' => PurchaseReturn::where('status', 'completed')->count(),
             'void'      => PurchaseReturn::where('status', 'void')->count(),
         ];
 

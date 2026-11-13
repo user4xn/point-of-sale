@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,7 +15,7 @@ class BankReportController extends Controller
         $to   = $request->get('to', now()->endOfMonth()->toDateString());
 
         $registers = CashRegister::with(['user', 'bankTransactions'])
-            ->whereBetween('opened_at', [$from, $to])
+            ->whereBetween('opened_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])
             ->orderByDesc('opened_at')
             ->paginate(10)
             ->withQueryString();
@@ -26,7 +27,7 @@ class BankReportController extends Controller
 
         // Metrics
         $all = CashRegister::with('bankTransactions')
-            ->whereBetween('opened_at', [$from, $to])
+            ->whereBetween('opened_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])
             ->get();
 
         $metrics = [

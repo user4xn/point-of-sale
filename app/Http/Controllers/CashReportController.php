@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,7 +17,7 @@ class CashReportController extends Controller
         $to   = $request->get('to', now()->endOfMonth()->toDateString());
 
         $registers = CashRegister::with(['user', 'bankTransactions'])
-            ->whereBetween('opened_at', [$from, $to])
+            ->whereBetween('opened_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])
             ->orderByDesc('opened_at')
             ->paginate(10)
             ->withQueryString();
@@ -26,17 +27,20 @@ class CashReportController extends Controller
            $r->total_sales_noncash = count($r->bankTransactions);
            $r->total_all_amount = $r->total_amount + $r->total_amount_noncash;
 
-           $r->selisih_amount = $r->closing_amount - ($r->opening_amount + $r->total_amount);
+           $r->selisih_amount = $r->status === 'closed'
+               ? $r->closing_amount - ($r->opening_amount + $r->total_amount)
+               : null;
+           $r->selisih_label = $r->selisih_amount === null ? 'Belum Ditutup' : ($r->selisih_amount < 0 ? 'Kurang' : ($r->selisih_amount > 0 ? 'Lebih' : 'Sesuai'));
         }
 
         // Metrics
-        $all = CashRegister::whereBetween('opened_at', [$from, $to])->get();
+        $all = CashRegister::whereBetween('opened_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])->get();
 
         $metrics = [
-            'total_selisih' => $all->filter(fn($r) => $r->closing_amount !== null && $r->closing_amount != $r->total_amount)->count(),
-            'amount_selisih' => $all->sum(fn($r) => abs(($r->closing_amount ?? 0) - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
-            'selisih_bulan' => $all->whereBetween('opened_at', [now()->startOfMonth(), now()->endOfMonth()])
-                ->sum(fn($r) => abs(($r->closing_amount ?? 0) - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
+            'total_selisih' => $all->filter(fn($r) => $r->status === 'closed' && $r->closing_amount != (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))->count(),
+            'amount_selisih' => $all->where('status', 'closed')->sum(fn($r) => abs($r->closing_amount - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
+            'selisih_bulan' => $all->where('status', 'closed')->whereBetween('opened_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->sum(fn($r) => abs($r->closing_amount - (($r->opening_amount ?? 0) + ($r->total_amount ?? 0)))),
             'late_close' => $all->filter(fn($r) =>
                 $r->status === 'closed' &&
                 $r->closed_at &&

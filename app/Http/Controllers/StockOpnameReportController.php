@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\StockOpname;
@@ -18,17 +19,19 @@ class StockOpnameReportController extends Controller
         $to   = $request->get('to', now()->endOfMonth()->toDateString());
 
         $opnames = StockOpname::with(['user','items.product'])
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])
             ->orderBy('created_at','desc')
             ->paginate(15)
             ->withQueryString();
 
         // Metrics
-        $totalOpname = StockOpname::whereBetween('created_at', [$from, $to])->count();
-        $totalItems  = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [$from, $to]))->count();
-        $totalLoss   = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [$from, $to]))
-                        ->sum('difference');
-        $totalNote   = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [$from, $to]))
+        $totalOpname = StockOpname::whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()])->count();
+        $totalItems  = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]))->count();
+        $totalLoss   = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]))
+                        ->where('difference', '<', 0)->sum('difference');
+        $totalSurplus = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]))
+                        ->where('difference', '>', 0)->sum('difference');
+        $totalNote   = StockOpnameItem::whereHas('opname', fn($q) => $q->whereBetween('created_at', [Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay()]))
                         ->whereNotNull('note')->count();
 
         return Inertia::render('Reports/StockOpname/Index', [
@@ -36,7 +39,9 @@ class StockOpnameReportController extends Controller
             'metrics' => [
                 'total_opname' => $totalOpname,
                 'total_items'  => $totalItems,
-                'total_loss'   => $totalLoss,
+                'total_loss'   => abs($totalLoss),
+                'total_shortage' => abs($totalLoss),
+                'total_surplus' => $totalSurplus,
                 'total_note'   => $totalNote,
             ],
             'opnames' => $opnames,
